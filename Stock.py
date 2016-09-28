@@ -1,0 +1,62 @@
+__author__ = 'daniel'
+from data.FinanceService import FinanceService, GoogleFinance, YahooFinance
+from Transaction import Buy, Sell, Transfer, Split
+
+
+
+
+
+class Stock(object):
+    def __init__(self, key, name, google_quote, yahoo_quote, currency, kind):
+        self.key = key
+        self.name = name
+        self.google_quote = google_quote
+        self.yahoo_quote = yahoo_quote
+        self.currency = currency
+        self.finance_service = FinanceService()
+        self.google_finance = GoogleFinance()
+        self.yahoo_finance = YahooFinance()
+        self.transactions = []
+        self.kind = kind
+
+
+    def add_transaction(self, transaction):
+        if isinstance(transaction, Split):
+            for trans in self.transactions:
+                if trans.date == transaction.date and trans.split_ratio == transaction.split_ratio:
+                    return
+        self.transactions.append(transaction)
+
+    def get_summary(self):
+        depot = {}
+        for transaction in reversed(self.transactions):
+            if isinstance(transaction, Sell):
+                depot[transaction.stock] = depot.get(transaction.stock, 0) - transaction.units
+            elif isinstance(transaction, Split):
+                if transaction.split_ratio > 0:
+                    depot[transaction.stock] = depot.get(transaction.stock, 0) * transaction.split_ratio
+            elif isinstance(transaction, Buy) or isinstance(transaction, Transfer):
+                depot[transaction.stock] = depot.get(transaction.stock, 0) + transaction.units
+            if transaction.stock in ("FING", "SAN", "VARD", "CAST"):
+                print transaction.date, transaction.stock, transaction.units, type(transaction), depot[transaction.stock]
+
+        summary_data = []
+        for key, value in sorted(depot.iteritems()):
+            if int(value) != 0:
+                summary_data.append([key, int(value)])
+        return summary_data
+
+    @staticmethod
+    def to_table_header():
+        return ["Name", "Price", "Currency", "Currency price"]
+
+    def to_table(self):
+        stock_price = self.finance_service.get_stock_price(self.google_quote, self.yahoo_quote)
+        currency_price = self.finance_service.get_currency_price(self.currency)
+
+        #google_price =  self.google_finance.get_stock_price(self.google_quote)
+        #google_currency = "--" #self.google_finance.get_currency_price(self.currency)
+        #yahoo_price = self.yahoo_finance.get_stock_price(self.yahoo_quote)
+        return [self.name, stock_price, self.currency, currency_price]
+
+
