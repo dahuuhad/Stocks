@@ -21,11 +21,11 @@ class AvanzaTransactionParser(Parser):
         self._stock_translator['AAPL'] = "Apple Inc"
         self._stock_translator['KOP'] = "Kopparbergs B"
         self._stock_translator['VARD'] = "Vardia Insurance Group"
-        self._stock_translator['FING'] = "FING B, FING TRB06, FING BTB0611"
+        self._stock_translator['FING'] = "FING B"
         self._stock_translator['NOK'] = "NOKI SDB, Nokia Oyj"
         self._stock_translator['VOLV'] = "VOLV IL B, Volvo B, Volvo DR B"
         self._stock_translator['ATL'] = "Atlant Stability"
-        self._stock_translator['SAN'] = "Banco Santander SA, SAN FRAC"
+        self._stock_translator['SAN'] = "Banco Santander SA"
         self._stock_translator['BON'] = "Bonheur"
         self._stock_translator['CLAS'] = "Clas Ohlson B"
         self._stock_translator['KO'] = "Coca-Cola Co"
@@ -57,7 +57,7 @@ class AvanzaTransactionParser(Parser):
                 return key
         return None
 
-    def parse_row(self, date, account, transaction_type, description, units, price, cost, currency):
+    def parse_row(self, date, account, transaction_type, description, units, price, cost, currency, isin=None):
         if date == "Datum" and account == "Konto":
             return None
         description = self._get_stock_from_transaction(description.decode("latin1"))
@@ -72,7 +72,8 @@ class AvanzaTransactionParser(Parser):
         #print date, transaction_type, description, units, price, cost, currency
         if transaction_type == u"Utdelning":
             return Dividend(description, date_object, price, units)
-        elif transaction_type == u"Köp" or transaction_type.startswith("Nyteckning") or transaction_type.startswith("OMVANDLING"):
+        elif transaction_type == u"Köp" or transaction_type.startswith("Nyteckning") \
+                or transaction_type.startswith("OMVANDLING") or transaction_type.startswith("BANCO SANT VP UTD"):
             #print date, transaction_type, description, units
             return Buy(description, date_object, price, units, fee)
         elif transaction_type == u"Sälj":

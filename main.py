@@ -2,6 +2,7 @@ __author__ = 'daniel'
 
 import csv
 import os
+import logging
 from operator import itemgetter
 from data.DataSource import CvsDataSource
 from parser.Parser import AvanzaTransactionParser
@@ -9,6 +10,9 @@ from reports.Report import PlainReport
 from tabulate import tabulate
 from Stock import Stock
 
+
+def setup_logging():
+    logging.basicConfig( format='%(asctime)s %(levelname)s %(module)s::%(funcName)s (%(lineno)d) - %(message)s', level=logging.DEBUG)
 
 
 
@@ -24,12 +28,14 @@ report_path = "reports"
 
 
 def main():
+    setup_logging()
+    logging.info("Reading cvs data source")
     data_source = CvsDataSource(root_path, path_to_cvs_files, stock_file)
     stocks = data_source.get_stocks()
 
     dividends = data_source.get_transactions("dividend")
     transactions = data_source.get_transactions("all")
-    print "Found %s transactions" % len(transactions)
+    logging.info("Found %s transactions" % len(transactions))
     plain_report = PlainReport(os.path.join(root_path, report_path))
     # plain_report.generate_stock_summary(stocks)
     plain_report.generate_transaction_history("dividends_history.txt", dividends)
@@ -48,7 +54,8 @@ def read_stocks_from_file(stock_file):
     with open(stock_file, 'r') as f:
         reader = csv.reader(f, dialect='excel', delimiter=';')
         for row in reader:
-            stocks.append(Stock(*row))
+            if row[-1] == "Aktie":
+                stocks.append(Stock(*row))
     return stocks
 
 def find_stock_for_transaction(stocks, transaction):
@@ -62,9 +69,9 @@ def read_transaction_rows_from_file(transaction_path, stocks):
     transactions = []
     transaction_parser = AvanzaTransactionParser()
     if os.path.isdir(transaction_path):
-        for file_name in os.listdir(transaction_path):
+        for file_name in sorted(os.listdir(transaction_path)):
             if os.path.splitext(file_name)[1] == ".csv":
-                print "Parsing %s" % file_name
+                logging.info("Parsing %s" % file_name)
                 with open(os.path.join(transaction_path, file_name), 'r') as f:
                     reader = csv.reader(f, dialect='excel', delimiter=';')
                     for row in reader:
@@ -76,7 +83,8 @@ def read_transaction_rows_from_file(transaction_path, stocks):
 
 
 def print_stock_summary(stocks):
-    summary_header = ["Stock", "Units"]
+    logging.info("Printing stock summary")
+    summary_header = ["Stock", "Units", "Price", "Value"]
     summary_data = []
     for stock in stocks:
         summary_data  = summary_data + stock.get_summary()
@@ -84,10 +92,14 @@ def print_stock_summary(stocks):
 
 def main2():
     stocks = read_stocks_from_file(os.path.join(root_path, stock_file))
+    logging.debug(stocks)
     read_transaction_rows_from_file(os.path.join(root_path, path_to_cvs_files), stocks)
-    print len(stocks)
+    logging.info("Number of stocks: %s" % len(stocks))
     print_stock_summary(stocks)
+    return 0
 
 if __name__ == "__main__":
     #main()
+    setup_logging()
     main2()
+    exit(0)

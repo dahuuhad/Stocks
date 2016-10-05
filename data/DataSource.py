@@ -3,6 +3,7 @@ __author__ = 'daniel'
 
 import os
 import csv
+import logging
 
 from Transaction import Dividend
 from Stock import Stock
@@ -18,7 +19,7 @@ class DataSource(object):
         self.stocks.append(stock)
 
     def add_transaction(self, transaction):
-        #print "Add transaction %s (%s)" % (type(transaction), transaction.stock)
+        logging.debug("Add transaction %s (%s)" % (type(transaction), transaction.stock))
         self.transactions.append(transaction)
 
     def get_stocks(self):
@@ -61,7 +62,7 @@ class CvsDataSource(DataSource):
         transaction_parser = AvanzaTransactionParser()
         for file_name in os.listdir(self.transaction_path):
             if self._is_csv_file(os.path.join(self.transaction_path, file_name)):
-                print "Parsing %s" % file_name
+                logging.info("Parsing %s" % file_name)
                 with open(os.path.join(self.transaction_path, file_name), 'r') as f:
                     reader = csv.reader(f, dialect='excel', delimiter=';')
                     for row in reader:

@@ -7,6 +7,9 @@ class Transaction(object):
         self.stock = stock
         self.date = date
 
+    def __str__(self):
+        return "%s, %s" % (self.date, self.stock )
+
     @classmethod
     def to_table_header(cls):
         return ["Stock", "Date"]
@@ -40,6 +43,9 @@ class Dividend(Transaction):
         self.price = price
         self.units = units
 
+    def __str__(self):
+        return "%s, %s, %s, %s" % (super(Dividend, self).__str__(), "Dividend", self.units, self.price)
+
     @classmethod
     def to_table_header(cls):
         table_header = super(Dividend, cls).to_table_header()
@@ -62,6 +68,10 @@ class Buy(Transaction):
         self.units = units
         self.fee = fee
 
+    def __str__(self):
+        return "%s, %s, %s, %s, %s" % (super(Buy, self).__str__(), "Buy", self.units, self.price, self.fee)
+
+
     @classmethod
     def to_table_header(cls):
         table_header = super(Buy, cls).to_table_header()
@@ -80,7 +90,6 @@ class Buy(Transaction):
 class Sell(Buy):
     def __init__(self, stock, date, price, units, fee):
         super(Sell, self).__init__(stock, date, price, units, fee)
-
 
 
 class Split(Transaction):

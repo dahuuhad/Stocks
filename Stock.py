@@ -1,6 +1,7 @@
 __author__ = 'daniel'
+import logging
 from data.FinanceService import FinanceService, GoogleFinance, YahooFinance
-from Transaction import Buy, Sell, Transfer, Split
+from Transaction import Buy, Sell, Transfer, Split,Dividend
 
 
 
@@ -27,7 +28,7 @@ class Stock(object):
                     return
         self.transactions.append(transaction)
 
-    def get_summary(self):
+    def get_summary(self, start_date=None, end_date=None):
         depot = {}
         for transaction in reversed(self.transactions):
             if isinstance(transaction, Sell):
@@ -37,13 +38,15 @@ class Stock(object):
                     depot[transaction.stock] = depot.get(transaction.stock, 0) * transaction.split_ratio
             elif isinstance(transaction, Buy) or isinstance(transaction, Transfer):
                 depot[transaction.stock] = depot.get(transaction.stock, 0) + transaction.units
-            if transaction.stock in ("FING", "SAN", "VARD", "CAST"):
-                print transaction.date, transaction.stock, transaction.units, type(transaction), depot[transaction.stock]
 
         summary_data = []
-        for key, value in sorted(depot.iteritems()):
-            if int(value) != 0:
-                summary_data.append([key, int(value)])
+        for key, unit in sorted(depot.iteritems()):
+            if int(unit) != 0:
+                price = self.google_finance.get_stock_price(self.google_quote)
+                value = 0.0
+                if price != "--":
+                    value = float(price)*unit
+                summary_data.append([self.name, int(unit), price, value])
         return summary_data
 
     @staticmethod
