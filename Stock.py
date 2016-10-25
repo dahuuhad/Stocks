@@ -8,7 +8,7 @@ from Transaction import Buy, Sell, Transfer, Split,Dividend
 
 
 class Stock(object):
-    def __init__(self, key, name, google_quote, yahoo_quote, currency, kind):
+    def __init__(self, key, name, google_quote, yahoo_quote, currency, kind = "Aktie", descriptions = []):
         self.key = key
         self.name = name
         self.google_quote = google_quote
@@ -19,7 +19,10 @@ class Stock(object):
         self.yahoo_finance = YahooFinance()
         self.transactions = []
         self.kind = kind
+        self.descriptions = descriptions
 
+    def has_description(self, description):
+        return description in self.descriptions or self.key == description
 
     def add_transaction(self, transaction):
         if isinstance(transaction, Split):

@@ -41,6 +41,7 @@ class AvanzaTransactionParser(Parser):
         self._stock_translator['CIT'] = "Citigroup"
         self._stock_translator['SMP'] = "Sampo A"
         self._stock_translator['TEL'] = "Telia Company"
+        self._stock_translator['NOVO'] = "Novo Nordisk B"
 
         self._stock_translator['WAL'] = "Walmart"
         self._stock_translator['SWED'] = "Swedbank A"
@@ -60,9 +61,9 @@ class AvanzaTransactionParser(Parser):
     def parse_row(self, date, account, transaction_type, description, units, price, cost, currency, isin=None):
         if date == "Datum" and account == "Konto":
             return None
-        description = self._get_stock_from_transaction(description.decode("latin1"))
-        if not description:
-            return
+        #description = self._get_stock_from_transaction(description.decode("latin1"))
+        #if not description:
+        #    return
         units = self.num(units)
         price = self.num(price)
         cost = self.num(cost)

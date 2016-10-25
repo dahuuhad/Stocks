@@ -9,7 +9,7 @@ from parser.Parser import AvanzaTransactionParser
 from reports.Report import PlainReport
 from tabulate import tabulate
 from Stock import Stock
-
+from data.Database import Database
 
 def setup_logging():
     logging.basicConfig( format='%(asctime)s %(levelname)s %(module)s::%(funcName)s (%(lineno)d) - %(message)s', level=logging.DEBUG)
@@ -32,6 +32,7 @@ def main():
     logging.info("Reading cvs data source")
     data_source = CvsDataSource(root_path, path_to_cvs_files, stock_file)
     stocks = data_source.get_stocks()
+
 
     dividends = data_source.get_transactions("dividend")
     transactions = data_source.get_transactions("all")
@@ -60,7 +61,7 @@ def read_stocks_from_file(stock_file):
 
 def find_stock_for_transaction(stocks, transaction):
     for stock in stocks:
-        if stock.key == transaction.stock:
+        if stock.has_description(transaction.stock.decode("latin1")):
             return stock
     return None
 
@@ -92,7 +93,9 @@ def print_stock_summary(stocks):
 
 def main2():
     stocks = read_stocks_from_file(os.path.join(root_path, stock_file))
-    logging.debug(stocks)
+    db = Database('data/stocks.db', 'data/structures.sql', 'data/initial_data.sql')
+    stocks = db.get_all_stocks()
+
     read_transaction_rows_from_file(os.path.join(root_path, path_to_cvs_files), stocks)
     logging.info("Number of stocks: %s" % len(stocks))
     print_stock_summary(stocks)
