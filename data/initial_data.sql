@@ -49,6 +49,7 @@ INSERT OR REPLACE INTO stock_identifier (stock, identifier) VALUES
 ('DE', 'Deere & Co'),
 ('ERIC-B', 'Ericsson B'),
 ('SHB-B', 'Handelsbanken'),
+('SHB-B', 'Handelsbanken B'),
 ('SHB-B', 'SHB'),
 ('SHB-B', 'SHB B OLD'),
 ('HM-B', 'Hennes & Mauritz B'),

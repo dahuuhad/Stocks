@@ -3,10 +3,6 @@ import logging
 from data.FinanceService import FinanceService, GoogleFinance, YahooFinance
 from Transaction import Buy, Sell, Transfer, Split,Dividend
 
-
-
-
-
 class Stock(object):
     def __init__(self, key, name, google_quote, yahoo_quote, currency, kind = "Aktie", descriptions = []):
         self.key = key

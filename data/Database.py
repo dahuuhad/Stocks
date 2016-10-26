@@ -65,7 +65,7 @@ class Database():
         return stocks
 
     def save_transactions(self, new_transactions):
-        logging.info("Save transactions")
+        logging.info("Saving %s new transactions" % len(new_transactions))
         for transaction in new_transactions:
             try:
                 self.save_transaction(transaction)
@@ -74,23 +74,24 @@ class Database():
         self.con.commit()
                 
     def save_transaction(self, transaction):
-        logging.info("Save transaction")
+        logging.debug("Save transaction (%s)" % transaction)
         stock_key = self._get_stock_key_from_description(transaction.stock)
         transaction_type = self._get_transaction_type(transaction)
         split_ratio = 1.0
         if transaction_type == "Split":
             split_ratio = self._get_split_ratio(stock_key)
-        sql = "INSERT INTO transactions (trans_date, trans_type, stock, units, price, split_ratio) VALUES (?, ?, ?, ?, ?, ?)"
+        sql = "INSERT INTO transactions (trans_date, trans_type, stock, units, price, fees, split_ratio) VALUES (?, ?, ?, ?, ?, ?, ?)"
         cur = self.con.cursor()
-        transactions = ((transaction.date.strftime("%Y-%m-%d %H:%M:%S"), transaction_type, stock_key, transaction.units, transaction.price, split_ratio),)
+        transactions = ((transaction.date.strftime("%Y-%m-%d %H:%M:%S"), transaction_type, stock_key, transaction.units, transaction.price, transaction.fee, split_ratio),)
         logging.debug(transactions)
         try:
             cur.executemany(sql, transactions)
+            logging.info("Transaction %s saved" % (transactions))
         except lite.IntegrityError, e:
             logging.error(e)
 
     def _get_stock_key_from_description(self, stock_desc):
-        sql = 'SELECT stock FROM stock_identifier WHERE identifier = "%s"' % (stock_desc)
+        sql = 'SELECT stock FROM stock_identifier WHERE identifier = "%s"' % (stock_desc.decode("latin1"))
         logging.debug(sql)
         cur = self.con.cursor()
         cur.execute(sql)
