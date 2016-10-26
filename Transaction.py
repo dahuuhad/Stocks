@@ -6,9 +6,12 @@ class Transaction(object):
     def __init__(self, stock, date):
         self.stock = stock
         self.date = date
+        self.price = 0.0
 
     def __str__(self):
         return "%s, %s" % (self.date, self.stock )
+
+
 
     @classmethod
     def to_table_header(cls):
@@ -40,7 +43,6 @@ class Transfer(Transaction):
 class Dividend(Transaction):
     def __init__(self, stock, date, price, units):
         super(Dividend, self).__init__(stock, date)
-        self.price = price
         self.units = units
 
     def __str__(self):
@@ -96,11 +98,12 @@ class Split(Transaction):
     def __init__(self, stock, date, units):
         super(Split, self).__init__(stock, date)
         self.units = units
+        self.price = 0.0
         self.split_ratio = self.__get_split_ratio
 
     @classmethod
     def to_table_header(cls):
-        return ["Stock", "Date", "Units", "Split Ration"]
+        return ["Stock", "Date", "Units", "Split Ratio"]
 
     def to_table(self):
         return [self.stock, self.date, self.units, self.split_ratio]
@@ -110,13 +113,13 @@ class Split(Transaction):
     def __get_split_ratio(self):
         if self.stock == 'AAPL':
             return 7
-        elif self.stock == 'HM':
+        elif self.stock == 'HM-B':
             return 2
-        elif self.stock == 'SHB':
+        elif self.stock == 'SHB-B':
             return 3
         elif self.stock == 'SBUX':
             return 2
-        elif self.stock == 'VOLV':
+        elif self.stock == 'VOLV-B':
             return 6
-        elif self.stock == 'ERIC':
+        elif self.stock == 'ERIC-B':
             return 0.2

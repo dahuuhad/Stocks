@@ -23,10 +23,13 @@ INSERT OR REPLACE INTO stocks (signature, name, exchange, currency) VALUES
 ('SBUX',    'Starbucks',        'NASDAQ',   'USD'),
 ('VARDIA',  'Vardia',           'OL',       'NOK'),
 ('RATO-B',  'Ratos',            'STO',      'SEK'),
-('NCC-A',   'NCC',              'STO',      'SEK'),
+('NCC-B',   'NCC',              'STO',      'SEK'),
 ('SKA-B',   'Skanska',          'STO',      'SEK'),
 ('FING-B',  'Fingerprint',      'STO',      'SEK'),
 ('NOKIA',   'Nokia',            'HEL',      'EUR'),
+('SIGM-B',  'Sigma',            'STO',      'SEK'),
+('MULQ',    'MultiQ',           'STO',      'SEK'),
+('WM-B',    'WM Data',           'STO',      'SEK'),
 ('NOVO-B',  'Novo Nordisk',     'CPH',      'DKK');
 
 INSERT OR REPLACE INTO stock_identifier (stock, identifier) VALUES
@@ -54,13 +57,26 @@ INSERT OR REPLACE INTO stock_identifier (stock, identifier) VALUES
 ('MCD', "McDonald's Corp"),
 ('PROTCT', 'Protector Forsikring'),
 ('CAST', 'Castellum'),
-('CIT', 'Citigroup'),
+('C', 'Citigroup'),
+('C', 'Citigroup Inc'),
 ('SAMAS', 'Sampo A'),
 ('TLSN', 'Telia Company'),
 ('NOVO-B', 'Novo Nordisk B'),
 ('WMT', 'Walmart'),
+('WMT', 'Wal Mart Stores Inc'),
 ('SWED-A', 'Swedbank A'),
 ('SBUX', 'Starbucks Corp'),
 ('RATO-B', 'Ratos B'),
-('NCC-A', 'Ncc B'),
+('NCC-B', 'NCC B'),
+('SIGM-B', 'SIGM B'),
+('MULQ', 'MultiQ International'),
+('WM-B', 'WM B'),
 ('SKA-B', 'Skanska B');
+
+INSERT OR REPLACE INTO split_ratio (stock, ratio) VALUES
+('AAPL', 7.0),
+('HM-B', 2.0),
+('SHB-B', 3.0),
+('SBUX', 2.0),
+('VOLV-B', 6.0),
+('ERIC-B', 0.2);

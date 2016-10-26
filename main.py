@@ -11,8 +11,8 @@ from tabulate import tabulate
 from Stock import Stock
 from data.Database import Database
 
-def setup_logging():
-    logging.basicConfig( format='%(asctime)s %(levelname)s %(module)s::%(funcName)s (%(lineno)d) - %(message)s', level=logging.DEBUG)
+def setup_logging(level, logfile):
+    logging.basicConfig( format='%(asctime)s %(levelname)s %(module)s::%(funcName)s (%(lineno)d) - %(message)s', level=level, filename=logfile)
 
 
 
@@ -66,22 +66,21 @@ def find_stock_for_transaction(stocks, transaction):
     return None
 
 
-def read_transaction_rows_from_file(transaction_path, stocks):
+def read_transaction_rows_from_file(transaction_path):
     transactions = []
     transaction_parser = AvanzaTransactionParser()
-    if os.path.isdir(transaction_path):
-        for file_name in sorted(os.listdir(transaction_path)):
-            if os.path.splitext(file_name)[1] == ".csv":
-                logging.info("Parsing %s" % file_name)
-                with open(os.path.join(transaction_path, file_name), 'r') as f:
-                    reader = csv.reader(f, dialect='excel', delimiter=';')
-                    for row in reader:
-                        transaction = transaction_parser.parse_row(*row)
-                        if transaction:
-                            stock = find_stock_for_transaction(stocks, transaction)
-                            if stock:
-                                stock.add_transaction(transaction)
-
+    if not os.path.isdir(transaction_path):
+        raise Exception("Directory does not exists %s" % transaction_path)
+    for file_name in sorted(os.listdir(transaction_path)):
+        if os.path.splitext(file_name)[1] == ".csv":
+            logging.info("Parsing %s" % file_name)
+            with open(os.path.join(transaction_path, file_name), 'r') as f:
+                reader = csv.reader(f, dialect='excel', delimiter=';')
+                for row in reader:
+                    transaction = transaction_parser.parse_row(*row)
+                    if transaction:
+                        transactions.append(transaction)
+    return transactions
 
 def print_stock_summary(stocks):
     logging.info("Printing stock summary")
@@ -96,13 +95,14 @@ def main2():
     db = Database('data/stocks.db', 'data/structures.sql', 'data/initial_data.sql')
     stocks = db.get_all_stocks()
 
-    read_transaction_rows_from_file(os.path.join(root_path, path_to_cvs_files), stocks)
+    new_transactions = read_transaction_rows_from_file(os.path.join(root_path, path_to_cvs_files))
+    db.save_transactions(new_transactions)
     logging.info("Number of stocks: %s" % len(stocks))
     print_stock_summary(stocks)
     return 0
 
 if __name__ == "__main__":
     #main()
-    setup_logging()
+    setup_logging(level=logging.INFO, logfile="/tmp/stocks.log")
     main2()
     exit(0)
