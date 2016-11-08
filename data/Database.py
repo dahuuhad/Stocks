@@ -1,10 +1,12 @@
 import sqlite3 as lite
-import sys
+import os
+import json
 import logging
+
 from Stock import Stock
 from Transaction import Dividend, Buy, Sell, Split, Transfer
 from datetime import datetime
-
+from collections import OrderedDict
 
 class UnknownStockException(Exception):
     pass
@@ -16,9 +18,11 @@ class UnknownTransactionTypeException(Exception):
 
 class Database():
 
-    def __init__(self, database_path, data_structure_path, initial_data_path):
+    def __init__(self, database_path):
         self.db_path = database_path
         self.con = lite.connect(self.db_path)
+
+    def setup(self, data_structure_path, initial_data_path):
         self._read_and_execute_sql_from_file(data_structure_path)
         self._read_and_execute_sql_from_file(initial_data_path)
 
@@ -123,3 +127,48 @@ class Database():
         if ratio:
             return ratio[0]
         return 1.0
+
+    def export_to_json(self, json_path):
+        tables_to_export = ['transactions']
+        if not os.path.isdir(json_path):
+            os.mkdir(json_path)
+        for table in tables_to_export:
+            self.table_to_json(json_path, table)
+
+    def table_to_json(self, json_path, table):
+        with open(os.path.join(json_path, table+".json"), 'w') as file:
+            data = self.get_transactions()
+
+            for json_row in data:
+                json_row["@timestamp"] = json_row['trans_date'].replace(" ", "T")+"Z"
+                json.dump(json_row, file)
+                file.write('\n')
+                #json.dump(json_row, file)
+
+    def get_transactions(self, transaction_type=None):
+        sql = "SELECT trans_date, trans_type, stock, name, units, price, fees, split_ratio FROM transactions"
+        sql += " JOIN stocks ON stock=signature"
+        if transaction_type:
+            sql += " WHERE trans_type = '%s'" % transaction_type
+        sql += " ORDER BY trans_date DESC"
+        return self.query_db(sql)
+
+    def get_stock_name(self, signature):
+        sql = "SELECT name FROM stocks WHERE signature='%s'" % signature
+        return self.query_db(sql)
+
+    def query_db(self, query, args=(), one=False):
+        # type: (object, object, object) -> object
+        logging.debug(query)
+        cur = self.con.cursor()
+        cur.execute(query, args)
+        r = [OrderedDict((cur.description[i][0], value) \
+                  for i, value in enumerate(row)) for row in cur.fetchall()]
+        return (r[0] if r else None) if one else r
+
+
+    def dict_factory(self, cursor, row):
+        d = {}
+        for idx, col in enumerate(cursor.description):
+            d[col[0]] = row[idx]
+        return d

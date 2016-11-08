@@ -17,7 +17,7 @@ class Parser(object):
 
         date_object = datetime.strptime(date, "%Y-%m-%d")
         transaction_type = transaction_type.decode("latin1")
-        print date, transaction_type, description, units, price, cost, currency, fee
+        print date, transaction_type, description.decode("latin1"), units, price, cost, currency, fee
         if transaction_type == u"Utdelning":
             return Dividend(description, date_object, price, units)
         elif transaction_type == u"Köp" or transaction_type.startswith("Nyteckning") \

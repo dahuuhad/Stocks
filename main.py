@@ -4,6 +4,7 @@ import csv
 import os
 import sys
 import logging
+import argparse
 from operator import itemgetter
 from data.DataSource import CvsDataSource
 from parser.Parser import AvanzaTransactionParser
@@ -11,6 +12,12 @@ from reports.Report import PlainReport
 from tabulate import tabulate
 from Stock import Stock
 from data.Database import Database
+from spreadsheet.GoogleSheet import GoogleSheet
+from oauth2client import tools
+
+parser = argparse.ArgumentParser("Read stock information from Avanza and create a Google Sheet",
+                                 formatter_class=argparse.ArgumentDefaultsHelpFormatter, parents=[tools.argparser])
+
 
 def setup_logging(level, logfile):
     logging.basicConfig( format='%(asctime)s %(levelname)s %(module)s::%(funcName)s (%(lineno)d) - %(message)s', level=level, filename=logfile, filemode='w')
@@ -21,7 +28,7 @@ def compare_files(file1, file2):
     import filecmp
     return filecmp.cmp(file1, file2)
 
-
+json_path = os.path.join(os.sep, "Users", "daniel", "Documents", "Aktier", "JSON")
 root_path = os.path.join(os.sep, "Users", "daniel", "Documents", "Aktier")
 stock_file = "Stocks.txt"
 path_to_cvs_files = "transactions"
@@ -60,14 +67,56 @@ def print_stock_summary(stocks):
     print tabulate(sorted(summary_data, key=itemgetter(0)), summary_header)
 
 def main():
-    db = Database('data/stocks.db', 'data/structures.sql', 'data/initial_data.sql')
+    general_args = parser.add_argument_group("General")
+    general_args.add_argument("-v", "--verbose", action="store_true", help="Increase logging")
+    general_args.add_argument("-l", "--logfile", dest="logfile", default="/tmp/stocks.log", help="Log output file")
+    general_args.add_argument("--read", dest="read_transactions", action="store_true")
+    general_args.add_argument("--no-read", dest="read_transactions", action="store_false")
+    parser.set_defaults(read_transactions=True)
+    general_args.add_argument("--write", dest="write_sheet", action="store_true")
+    general_args.add_argument("--no-write", dest="write_sheet", action="store_false")
+    parser.set_defaults(write_sheet=True)
+    read_args = parser.add_argument_group("Read transactions from Avanza CSV export")
+    write_args = parser.add_argument_group("Write transactions to Google Sheet")
+    write_args.add_argument("--sheet_id", default="1B3ih0RL4zQ_4xV5yO28GDWQSjZRr8TVBYtVm4HGKPA0", help="Google Sheet Id")
+    database_args = parser.add_argument_group("Database")
+    database_args.add_argument("--database_path", default=os.path.join('data', 'stocks.db'), help="Path to sqlite db")
+    database_args.add_argument("--data_structures", default=os.path.join('data', 'structures.sql'), help="Database structures")
+    database_args.add_argument("--initial_data", default=os.path.join('data', 'initial_data.sql'), help="Initial data")
+    database_args.add_argument("--setup_database", action="store_true")
 
-    new_transactions = read_transaction_rows_from_file(os.path.join(root_path, path_to_cvs_files))
-    db.save_transactions(new_transactions)
-    stocks = db.get_all_stocks()
-    print_stock_summary(stocks)
+    args = parser.parse_args()
+    if args.database_path is None:
+        parser.error("A database path must be provided")
+
+    level = logging.INFO
+    if args.verbose:
+        level = logging.DEBUG
+    setup_logging(level=level, logfile=args.logfile)
+
+    db = Database(args.database_path, )
+    if args.setup_database:
+        db.setup(args.data_structures, args.initial_data)
+
+    if args.read_transactions:
+        new_transactions = read_transaction_rows_from_file(os.path.join(root_path, path_to_cvs_files))
+        db.save_transactions(new_transactions)
+        db.export_to_json(json_path)
+
+    if args.write_sheet:
+        sheet_id = args.sheet_id
+        args = None
+        #spreadsheetId = '1B3ih0RL4zQ_4xV5yO28GDWQSjZRr8TVBYtVm4HGKPA0'
+        sheet = GoogleSheet(sheet_id)
+        dividends = db.get_transactions("Dividend")
+        sheet.write_transactions("Utdelningar", dividends)
+        #sheet.read_stocks()
+
+        stocks = db.get_all_stocks()
+        sheet.write_stock_summary("Portfolio", stocks)
+        #print_stock_summary(stocks)
+
 
 if __name__ == "__main__":
-    setup_logging(level=logging.DEBUG, logfile="/tmp/stocks.log")
     main()
     sys.exit(0)
