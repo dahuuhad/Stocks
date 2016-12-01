@@ -27,9 +27,22 @@ class Stock(object):
                     return
         self.transactions.append(transaction)
 
+    def get_latest_dividend(self):
+        dividend = 0
+        latest = "2016-01-01 00:00:00"
+        for trans in self.transactions:
+            if not isinstance(trans, Dividend):
+                continue
+            if trans.date > latest:
+                dividend += trans.price
+        return dividend
+
     def get_summary(self, start_date=None, end_date=None):
         depot = {}
         for transaction in reversed(self.transactions):
+            if isinstance(transaction, Dividend):
+                continue
+            print transaction
             if isinstance(transaction, Sell):
                 depot[transaction.stock] = depot.get(transaction.stock, 0) - transaction.units
             elif isinstance(transaction, Split):
@@ -37,6 +50,7 @@ class Stock(object):
                     depot[transaction.stock] = depot.get(transaction.stock, 0) * transaction.units
             elif isinstance(transaction, Buy) or isinstance(transaction, Transfer):
                 depot[transaction.stock] = depot.get(transaction.stock, 0) + transaction.units
+        print depot
         summary_data = []
         for key, unit in sorted(depot.iteritems()):
             if int(unit) != 0:

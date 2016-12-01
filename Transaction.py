@@ -91,9 +91,15 @@ class Buy(Transaction):
         data_table.append(self.fee)
         return data_table
 
-class Sell(Buy):
+class Sell(Transaction):
     def __init__(self, stock, date, price, units, fee):
-        super(Sell, self).__init__(stock, date, price, units, fee)
+        super(Sell, self).__init__(stock, date)
+        self.price = price
+        self.units = units
+        self.fee = fee
+
+    def __str__(self):
+        return "%s, %s, %s, %s, %s" % (super(Sell, self).__str__(), "Sell", self.units, self.price, self.fee)
 
 
 class Split(Transaction):
@@ -101,6 +107,9 @@ class Split(Transaction):
         super(Split, self).__init__(stock, date)
         self.units = units
         self.price = 0.0
+
+    def __str__(self):
+        return "%s, %s, %s, %s" % (super(Split, self).__str__(), "Split", self.units, self.price)
 
     @classmethod
     def to_table_header(cls):

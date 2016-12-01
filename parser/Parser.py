@@ -25,7 +25,7 @@ class Parser(object):
             #print date, transaction_type, description, units
             return Buy(description, date_object, price, units, fee)
         elif transaction_type == u"Sälj":
-            print date, transaction_type, description, units
+            #print date, transaction_type, description, units
             return Sell(description, date_object, price, units, fee)
         elif transaction_type == u"Split" or transaction_type == u"Omvänd split":
             #print date, transaction_type, description, units

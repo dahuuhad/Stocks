@@ -160,18 +160,17 @@ class Database():
         result = self.query_db(sql)
         if return_json:
             return result
-
         transactions = []
         for trans in result:
             if trans.get('trans_type') == "Sell":
                 transactions.append(Sell(trans.get('stock'), trans.get('trans_date'), trans.get('price'), trans.get('units'), trans.get('fees')))
-            if trans.get('trans_type') == "Buy":
+            elif trans.get('trans_type') in ('Buy', 'Transfer'):
                 transactions.append(Buy(trans.get('stock'), trans.get('trans_date'), trans.get('price'), trans.get('units'),
                                   trans.get('fees')))
-            if trans.get('trans_type') == "Dividend":
+            elif trans.get('trans_type') == "Dividend":
                 transactions.append(Dividend(trans.get('stock'), trans.get('trans_date'), trans.get('price'), trans.get('units')))
-            if trans.get('trans_type') == "Split":
-                transactions.append(Split(trans.get('stock'), trans.get('trans_date'), trans.get('units')))
+            elif trans.get('trans_type') == "Split":
+                transactions.append(Split(trans.get('stock'), trans.get('trans_date'), trans.get('split_ratio')))
         return transactions
 
     def get_stock_name(self, signature):

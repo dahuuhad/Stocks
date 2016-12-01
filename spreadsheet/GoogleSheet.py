@@ -70,14 +70,11 @@ class GoogleSheet():
         values = []
         row = start_row
         for transaction in transactions:
-            print transaction
             values.append(self.db_transaction_to_sheet(transaction, row))
             row += 1
         body = {
             'values': values
         }
-        print values
-        print body
         result = self.service.spreadsheets().values().update(spreadsheetId=self.sheetId, range=rangeName,
                                                              valueInputOption=self.value_input_option, body=body).execute()
 
@@ -87,16 +84,17 @@ class GoogleSheet():
         rangeName = '%s!%s%s' % (sheet_name, start_col, start_row)
 
         values = []
-        row = start_row
+        row_id = start_row
         for stock in stocks:
-            values.append(self.stock_to_row(stock, row))
-            row += 1
+            row = self.stock_to_row(stock, row_id)
+            if not row:
+                continue
+            values.append(row)
+            row_id += 1
 
         body = {
             'values': values
         }
-        print values
-        print body
         result = self.service.spreadsheets().values().update(spreadsheetId=self.sheetId, range=rangeName,
                                                              valueInputOption=self.value_input_option, body=body).execute()
 
@@ -114,7 +112,7 @@ class GoogleSheet():
         l.append('=C%s/J%s' % (row, row))
         l.append('=GoogleFinance(L%s;"pe")' % row)
         l.append('=GoogleFinance(L%s;"eps")' % row)
-        l.append('=GoogleFinance(L%s) * M2' % row)
+        l.append('=GoogleFinance(L%s) * M%s' % (row, row))
         l.append('%s' % summary[0][1])
         l.append('100,00')
         l.append('=H%s*I%s' % (row, row))
@@ -124,9 +122,10 @@ class GoogleSheet():
             l.append(1)
         else:
             l.append('=GoogleFinance("CURRENCY:%sSEK")' % str(stock.currency))
-        l.append('=GoogleFinance(L%s;"incomedividend")' % row)
+        l.append(stock.get_latest_dividend())
         l.append('=N%s*H%s' % (row, row))
         l.append('=O%s/J%s' % (row, row))
+        l.append('=O%s/B%s' % (row, row))
         return l
 
     def db_transaction_to_sheet(self, transaction, row):
