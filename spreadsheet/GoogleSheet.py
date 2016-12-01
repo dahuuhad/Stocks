@@ -102,6 +102,10 @@ class GoogleSheet():
 
     def stock_to_row(self, stock, row):
         summary = stock.get_summary()
+        if not summary:
+            print stock.name
+            return []
+        print summary
         total = 100000
         l = []
         l.append(str(stock.name.encode("utf8")))
@@ -111,11 +115,11 @@ class GoogleSheet():
         l.append('=GoogleFinance(L%s;"pe")' % row)
         l.append('=GoogleFinance(L%s;"eps")' % row)
         l.append('=GoogleFinance(L%s) * M2' % row)
-        l.append('100')
+        l.append('%s' % summary[0][1])
         l.append('100,00')
         l.append('=H%s*I%s' % (row, row))
         l.append('=B%s/%s' % (row, total))
-        l.append(str(stock.key))
+        l.append(str(stock.google_quote))
         if stock.currency == "SEK":
             l.append(1)
         else:

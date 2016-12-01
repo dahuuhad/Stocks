@@ -16,7 +16,7 @@ INSERT OR REPLACE INTO stocks (signature, name, exchange, currency) VALUES
 ('PROTCT',  'Protector',        'OL',       'NOK'),
 ('SAMAS',   'Sampoo',           'HEL',      'EUR'),
 ('SAN',     'Banco Santander',  'NYSE',     'USD'),
-('TLSN',    'Telia',            'STO',      'SEK'),
+('TELIA',   'Telia',            'STO',      'SEK'),
 ('VOLV-B',  'Volvo',            'STO',      'SEK'),
 ('WMT',     'Walmarts',         'NYSE',     'USD'),
 ('SWED-A',  'Swedbank',         'STO',      'SEK'),
@@ -25,6 +25,7 @@ INSERT OR REPLACE INTO stocks (signature, name, exchange, currency) VALUES
 ('RATO-B',  'Ratos',            'STO',      'SEK'),
 ('NCC-B',   'NCC',              'STO',      'SEK'),
 ('SKA-B',   'Skanska',          'STO',      'SEK'),
+('SRNKE-B', 'Serneke',          'STO',      'SEK'),
 ('FING-B',  'Fingerprint',      'STO',      'SEK'),
 ('NOKIA',   'Nokia',            'HEL',      'EUR'),
 ('SIGM-B',  'Sigma',            'STO',      'SEK'),
@@ -61,7 +62,7 @@ INSERT OR REPLACE INTO stock_identifier (stock, identifier) VALUES
 ('C', 'Citigroup'),
 ('C', 'Citigroup Inc'),
 ('SAMAS', 'Sampo A'),
-('TLSN', 'Telia Company'),
+('TELIA', 'Telia Company'),
 ('NOVO-B', 'Novo Nordisk B'),
 ('WMT', 'Walmart'),
 ('WMT', 'Wal Mart Stores Inc'),
@@ -72,6 +73,7 @@ INSERT OR REPLACE INTO stock_identifier (stock, identifier) VALUES
 ('SIGM-B', 'SIGM B'),
 ('MULQ', 'MultiQ International'),
 ('WM-B', 'WM B'),
+('SRNKE-B', 'Serneke Group B'),
 ('SKA-B', 'Skanska B');
 
 INSERT OR REPLACE INTO split_ratio (stock, ratio) VALUES

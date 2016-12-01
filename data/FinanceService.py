@@ -4,7 +4,7 @@ import json
 import logging
 
 from googlefinance import getQuotes
-from yahoo_finance import Share, Currency
+#from yahoo_finance import Share, Currency
 
 
 class FinanceService(object):

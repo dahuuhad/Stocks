@@ -65,7 +65,11 @@ class Database():
             exchange = row[2]
             google = exchange + ":" + signature
             yahoo = signature + "." + signature
-            stocks.append(Stock(signature, row[1], google, yahoo, row[3], 'Aktie', self.get_descriptions(signature)))
+            stock = Stock(signature, row[1], google, yahoo, row[3], 'Aktie', self.get_descriptions(signature))
+            transactions = self.get_transactions(signature)
+            for trans in transactions:
+                stock.add_transaction(trans)
+            stocks.append(stock)
         return stocks
 
     def save_transactions(self, new_transactions):
@@ -106,10 +110,10 @@ class Database():
         return str(stock_key[0])
 
     def _get_transaction_type(self, transaction):
-        if isinstance(transaction, Buy):
-            return "Buy"
-        elif isinstance(transaction, Sell):
+        if isinstance(transaction, Sell):
             return "Sell"
+        elif isinstance(transaction, Buy):
+            return "Buy"
         elif isinstance(transaction, Dividend):
             return "Dividend"
         elif isinstance(transaction, Split):
@@ -137,7 +141,7 @@ class Database():
 
     def table_to_json(self, json_path, table):
         with open(os.path.join(json_path, table+".json"), 'w') as file:
-            data = self.get_transactions()
+            data = self.get_transactions(return_json=True)
 
             for json_row in data:
                 json_row["@timestamp"] = json_row['trans_date'].replace(" ", "T")+"Z"
@@ -145,13 +149,30 @@ class Database():
                 file.write('\n')
                 #json.dump(json_row, file)
 
-    def get_transactions(self, transaction_type=None):
+    def get_transactions(self, stock=None, transaction_type=None, return_json=False):
         sql = "SELECT trans_date, trans_type, stock, name, units, price, fees, split_ratio FROM transactions"
         sql += " JOIN stocks ON stock=signature"
         if transaction_type:
             sql += " WHERE trans_type = '%s'" % transaction_type
+        if stock:
+            sql += " WHERE signature = '%s'" % stock
         sql += " ORDER BY trans_date DESC"
-        return self.query_db(sql)
+        result = self.query_db(sql)
+        if return_json:
+            return result
+
+        transactions = []
+        for trans in result:
+            if trans.get('trans_type') == "Sell":
+                transactions.append(Sell(trans.get('stock'), trans.get('trans_date'), trans.get('price'), trans.get('units'), trans.get('fees')))
+            if trans.get('trans_type') == "Buy":
+                transactions.append(Buy(trans.get('stock'), trans.get('trans_date'), trans.get('price'), trans.get('units'),
+                                  trans.get('fees')))
+            if trans.get('trans_type') == "Dividend":
+                transactions.append(Dividend(trans.get('stock'), trans.get('trans_date'), trans.get('price'), trans.get('units')))
+            if trans.get('trans_type') == "Split":
+                transactions.append(Split(trans.get('stock'), trans.get('trans_date'), trans.get('units')))
+        return transactions
 
     def get_stock_name(self, signature):
         sql = "SELECT name FROM stocks WHERE signature='%s'" % signature

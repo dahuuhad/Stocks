@@ -23,7 +23,7 @@ class Stock(object):
     def add_transaction(self, transaction):
         if isinstance(transaction, Split):
             for trans in self.transactions:
-                if trans.date == transaction.date and trans.split_ratio == transaction.split_ratio:
+                if trans.date == transaction.date and trans.units == transaction.units:
                     return
         self.transactions.append(transaction)
 
@@ -33,11 +33,10 @@ class Stock(object):
             if isinstance(transaction, Sell):
                 depot[transaction.stock] = depot.get(transaction.stock, 0) - transaction.units
             elif isinstance(transaction, Split):
-                if transaction.split_ratio > 0:
-                    depot[transaction.stock] = depot.get(transaction.stock, 0) * transaction.split_ratio
+                if transaction.units > 0:
+                    depot[transaction.stock] = depot.get(transaction.stock, 0) * transaction.units
             elif isinstance(transaction, Buy) or isinstance(transaction, Transfer):
                 depot[transaction.stock] = depot.get(transaction.stock, 0) + transaction.units
-
         summary_data = []
         for key, unit in sorted(depot.iteritems()):
             if int(unit) != 0:
