@@ -92,12 +92,22 @@ class GoogleSheet():
                 summary_row.append('')
         return summary_row
 
+    def create_empty_rows(self, start_row, number_of_empty_rows):
+        empty_rows = []
+        for i in range(start_row, start_row+number_of_empty_rows):
+            empty_row =[]
+            for c in ascii_uppercase:
+                empty_row.append('')
+            empty_rows.append(empty_row)
+        return empty_rows
+
     def write_stock_summary(self, sheet_name, stocks):
         start_row = 2
         start_col = 'A'
         rangeName = '%s!%s%s' % (sheet_name, start_col, start_row)
 
         values = []
+
         row_id = start_row
         for stock in stocks:
             row = self.stock_to_row(stock, row_id)
@@ -105,7 +115,8 @@ class GoogleSheet():
                 continue
             values.append(row)
             row_id += 1
-
+        empty_rows = self.create_empty_rows(row_id, 2)
+        values = values + empty_rows
         values.append(self.insert_summary_row(start_row, row_id-1))
         body = {
             'values': values
