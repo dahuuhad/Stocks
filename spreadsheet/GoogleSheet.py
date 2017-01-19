@@ -7,6 +7,8 @@ from oauth2client import client
 from oauth2client import tools
 from oauth2client.file import Storage
 from datetime import datetime
+from string import ascii_uppercase
+
 try:
     import argparse
     flags=tools.argparser.parse_args(args=[])
@@ -78,6 +80,18 @@ class GoogleSheet():
         result = self.service.spreadsheets().values().update(spreadsheetId=self.sheetId, range=rangeName,
                                                              valueInputOption=self.value_input_option, body=body).execute()
 
+    def insert_summary_row(self, start_row, end_row):
+        summary_row = []
+        summary_columns = 'BCIJO'
+        for c in ascii_uppercase:
+            if c == 'A':
+                summary_row.append('Totalt')
+            elif c in summary_columns:
+                summary_row.append('=SUM(%s%s:%s%s)' % (c, start_row, c, end_row))
+            else:
+                summary_row.append('')
+        return summary_row
+
     def write_stock_summary(self, sheet_name, stocks):
         start_row = 2
         start_col = 'A'
@@ -92,6 +106,7 @@ class GoogleSheet():
             values.append(row)
             row_id += 1
 
+        values.append(self.insert_summary_row(start_row, row_id-1))
         body = {
             'values': values
         }
@@ -172,3 +187,5 @@ class GoogleSheet():
         value_input_option = 'USER_ENTERED'
         result = self.service.spreadsheets().values().update(spreadsheetId=self.sheetId, range=rangeName,
                                                         valueInputOption=value_input_option, body=body).execute()
+
+

@@ -8,7 +8,6 @@ import argparse
 from operator import itemgetter
 from data.DataSource import CvsDataSource
 from parser.Parser import AvanzaTransactionParser
-from reports.Report import PlainReport
 from tabulate import tabulate
 from Stock import Stock
 from data.Database import Database
@@ -106,15 +105,12 @@ def main():
     if args.write_sheet:
         sheet_id = args.sheet_id
         args = None
-        #spreadsheetId = '1B3ih0RL4zQ_4xV5yO28GDWQSjZRr8TVBYtVm4HGKPA0'
         sheet = GoogleSheet(sheet_id)
         dividends = db.get_transactions("Dividend")
         sheet.write_transactions("Utdelningar", dividends)
-        #sheet.read_stocks()
 
         stocks = db.get_all_stocks()
         sheet.write_stock_summary("Portfolio", stocks)
-        #print_stock_summary(stocks)
 
 
 if __name__ == "__main__":

@@ -52,7 +52,7 @@ class Database():
             descriptions.append(row[0])
         return descriptions
 
-    def get_all_stocks(self):
+    def get_all_stocks(self, start_date=None, end_date=None):
         logging.debug("Get stock information from database")
         sql = "SELECT signature, name, exchange, currency FROM stocks"
         cur = self.con.cursor()
@@ -66,7 +66,7 @@ class Database():
             google = exchange + ":" + signature
             yahoo = signature + "." + signature
             stock = Stock(signature, row[1], google, yahoo, row[3], 'Aktie', self.get_descriptions(signature))
-            transactions = self.get_transactions(signature)
+            transactions = self.get_transactions(signature, start_date=start_date, end_date=end_date)
             for trans in transactions:
                 stock.add_transaction(trans)
             stocks.append(stock)
@@ -149,13 +149,22 @@ class Database():
                 file.write('\n')
                 #json.dump(json_row, file)
 
-    def get_transactions(self, stock=None, transaction_type=None, return_json=False):
+    def get_transactions(self, stock=None, transaction_type=None, start_date=None, end_date=None, return_json=False):
         sql = "SELECT trans_date, trans_type, stock, name, units, price, fees, split_ratio FROM transactions"
         sql += " JOIN stocks ON stock=signature"
+        sql_operator = "WHERE"
         if transaction_type:
-            sql += " WHERE trans_type = '%s'" % transaction_type
+            sql += " %s trans_type = '%s'" % (sql_operator, transaction_type)
+            sql_operator = "AND"
         if stock:
-            sql += " WHERE signature = '%s'" % stock
+            sql += " %s signature = '%s'" % (sql_operator, stock)
+            sql_operator = "AND"
+        if start_date:
+            sql += " %s trans_date >= %s" % (sql_operator, start_date)
+            sql_operator = "AND"
+        if end_date:
+            sql += " %s trans_date =< %s" % (sql_operator, end_date)
+            sql_operator = "AND"
         sql += " ORDER BY trans_date DESC"
         result = self.query_db(sql)
         if return_json:
