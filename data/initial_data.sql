@@ -38,6 +38,7 @@ INSERT OR REPLACE INTO stock_identifier (stock, identifier) VALUES
 ('KOP', 'Kopparbergs B'),
 ('VARDIA', 'Vardia Insurance Group'),
 ('FING-B', 'FING B'),
+('FING-B', 'FING BTB0611'),
 ('NOKIA', 'NOKI SDB'),
 ('NOKIA', 'Nokia Oyj'),
 ('VOLV-B', 'VOLV IL B'),
