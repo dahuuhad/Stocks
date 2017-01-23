@@ -55,6 +55,7 @@ class Database():
     def get_all_stocks(self, start_date=None, end_date=None):
         logging.debug("Get stock information from database")
         sql = "SELECT signature, name, exchange, currency FROM stocks"
+        sql += " ORDER BY name"
         cur = self.con.cursor()
         cur.execute(sql)
         rows = cur.fetchall()
@@ -90,7 +91,7 @@ class Database():
             split_ratio = self._get_split_ratio(stock_key)
         sql = "INSERT INTO transactions (trans_date, trans_type, stock, units, price, fees, split_ratio) VALUES (?, ?, ?, ?, ?, ?, ?)"
         cur = self.con.cursor()
-        transactions = ((transaction.date.strftime("%Y-%m-%d %H:%M:%S"), transaction_type, stock_key, transaction.units, transaction.price, transaction.fee, split_ratio),)
+        transactions = ((transaction.date.strftime("%Y-%m-%d %H:%M:%S"), transaction_type, stock_key, transaction.units, transaction.price, transaction.amount, split_ratio),)
         logging.debug(transactions)
         try:
             cur.executemany(sql, transactions)
@@ -165,7 +166,7 @@ class Database():
         if end_date:
             sql += " %s trans_date =< %s" % (sql_operator, end_date)
             sql_operator = "AND"
-        sql += " ORDER BY trans_date DESC"
+        sql += " ORDER BY trans_date ASC"
         result = self.query_db(sql)
         if return_json:
             return result
@@ -189,6 +190,7 @@ class Database():
     def query_db(self, query, args=(), one=False):
         # type: (object, object, object) -> object
         logging.debug(query)
+        print query
         cur = self.con.cursor()
         cur.execute(query, args)
         r = [OrderedDict((cur.description[i][0], value) \

@@ -82,7 +82,7 @@ class GoogleSheet():
 
     def insert_summary_row(self, start_row, end_row):
         summary_row = []
-        summary_columns = 'BCIJO'
+        summary_columns = 'BCIJOR   '
         for c in ascii_uppercase:
             if c == 'A':
                 summary_row.append('Totalt')
@@ -125,11 +125,9 @@ class GoogleSheet():
                                                              valueInputOption=self.value_input_option, body=body).execute()
 
     def stock_to_row(self, stock, row):
-        summary = stock.get_summary()
-        if not summary:
+        if stock.total_units == 0:
             print stock.name
             return []
-        print summary
         total = 100000
         l = []
         l.append(str(stock.name.encode("utf8")))
@@ -139,8 +137,8 @@ class GoogleSheet():
         l.append('=GoogleFinance(L%s;"pe")' % row)
         l.append('=GoogleFinance(L%s;"eps")' % row)
         l.append('=GoogleFinance(L%s) * M%s' % (row, row))
-        l.append('%s' % summary[0][1])
-        l.append('100,00')
+        l.append('%s' % self._float_to_str(stock.total_units))
+        l.append('%s' % self._float_to_str(stock.total_amount/stock.total_units))
         l.append('=H%s*I%s' % (row, row))
         l.append('=B%s/%s' % (row, total))
         l.append(str(stock.google_quote))
@@ -150,8 +148,9 @@ class GoogleSheet():
             l.append('=GoogleFinance("CURRENCY:%sSEK")' % str(stock.currency))
         l.append(stock.get_latest_dividend())
         l.append('=N%s*H%s' % (row, row))
-        l.append('=O%s/J%s' % (row, row))
+        l.append('=R%s/J%s' % (row, row))
         l.append('=O%s/B%s' % (row, row))
+        l.append('%s' % self._float_to_str(stock.get_total_dividends()))
         return l
 
     def db_transaction_to_sheet(self, transaction, row):

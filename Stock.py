@@ -17,15 +17,38 @@ class Stock(object):
         self.kind = kind
         self.descriptions = descriptions
 
+        self.total_amount = 0
+        self.total_units  = 0
+        self.total_dividends = 0
+
     def has_description(self, description):
         return description in self.descriptions or self.key == description
 
     def add_transaction(self, transaction):
+        add_transaction = True
         if isinstance(transaction, Split):
             for trans in self.transactions:
                 if trans.date == transaction.date and trans.units == transaction.units:
-                    return
-        self.transactions.append(transaction)
+                    add_transaction = False
+            if add_transaction and transaction.units > 0:
+                print self.name, self.total_amount, transaction.amount
+                self.total_units = self.total_units * transaction.units
+        elif isinstance(transaction, Dividend):
+            self.total_dividends += transaction.units*transaction.price
+        elif isinstance(transaction, Buy):
+            self.total_units += transaction.units
+            self.total_amount += transaction.amount
+            print self.name, self.total_amount, transaction.amount
+
+        elif isinstance(transaction, Sell):
+            self.total_units -= transaction.units
+            self.total_amount -= transaction.amount
+            print self.name, self.total_amount, -transaction.amount
+
+        if add_transaction:
+            if self.total_units == 0:
+                self.total_amount = 0
+            self.transactions.append(transaction)
 
     def get_latest_dividend(self):
         dividend = 0
@@ -37,20 +60,37 @@ class Stock(object):
                 dividend += trans.price
         return dividend
 
+    def get_total_dividends(self, start_date=None, end_date=None):
+        return self.total_dividends
+
+    def calculate_transaction_average(self, transaction):
+        if False and self.currency == "SEK":
+            return transaction.units*transaction.price+transaction.fee
+        else:
+            return transaction.amount
+
     def get_summary(self, start_date=None, end_date=None):
         depot = {}
+        value = 0
+        no_of_transactions = 0
         for transaction in reversed(self.transactions):
             if isinstance(transaction, Dividend):
                 continue
-            print transaction
+            print transaction, self.currency
             if isinstance(transaction, Sell):
                 depot[transaction.stock] = depot.get(transaction.stock, 0) - transaction.units
+                value -= self.calculate_transaction_average(transaction)
+                no_of_transactions += 1
             elif isinstance(transaction, Split):
                 if transaction.units > 0:
                     depot[transaction.stock] = depot.get(transaction.stock, 0) * transaction.units
             elif isinstance(transaction, Buy) or isinstance(transaction, Transfer):
                 depot[transaction.stock] = depot.get(transaction.stock, 0) + transaction.units
-        print depot
+                value += self.calculate_transaction_average(transaction)
+                no_of_transactions += 1
+        print "Depot = %s" % depot
+        print "Value = %s" % (value)
+        print "No of transactions = %s" % no_of_transactions
         summary_data = []
         for key, unit in sorted(depot.iteritems()):
             if int(unit) != 0:

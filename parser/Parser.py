@@ -7,26 +7,26 @@ from Transaction import Buy, Sell, Dividend, Transfer, Split
 
 
 class Parser(object):
-    def parse_row(self, date, account, transaction_type, description, units, price, cost, currency, isin=None):
+    def parse_row(self, date, account, transaction_type, description, units, price, amount, currency, isin=None):
         if date == "Datum" and account == "Konto":
             return None
         units = self.num(units)
         price = self.num(price)
-        cost = self.num(cost)
-        fee = cost - units*price
+        amount = self.num(amount)
+        #fee = amount - units * price
 
         date_object = datetime.strptime(date, "%Y-%m-%d")
         transaction_type = transaction_type.decode("latin1")
         #print date, transaction_type, description.decode("latin1"), units, price, cost, currency, fee
         if transaction_type == u"Utdelning":
             return Dividend(description, date_object, price, units)
-        elif transaction_type == u"Köp" or transaction_type.startswith("Nyteckning") \
+        elif transaction_type == u"Köp" or transaction_type.startswith("Teckningslikvid") \
                 or transaction_type.startswith("OMVANDLING") or transaction_type.startswith("BANCO SANT VP UTD"):
             #print date, transaction_type, description, units
-            return Buy(description, date_object, price, units, fee)
+            return Buy(description, date_object, price, units, amount)
         elif transaction_type == u"Sälj":
             #print date, transaction_type, description, units
-            return Sell(description, date_object, price, units, fee)
+            return Sell(description, date_object, price, units, amount)
         elif transaction_type == u"Split" or transaction_type == u"Omvänd split":
             #print date, transaction_type, description, units
             return Split(description, date_object, units)
