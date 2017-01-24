@@ -53,7 +53,7 @@ class Stock(object):
 
         if add_transaction:
             if self.total_units == 0:
-                self.realized_gain += self.total_amount
+                self.realized_gain += 0
                 self.total_amount = 0
             self.transactions.append(transaction)
 
