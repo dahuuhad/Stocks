@@ -60,6 +60,7 @@ INSERT OR REPLACE INTO stock_identifier (stock, identifier) VALUES
 ('MCD', "McDonald's Corp"),
 ('PROTCT', 'Protector Forsikring'),
 ('CAST', 'Castellum'),
+('CAST', 'CAST BTA'),
 ('C', 'Citigroup'),
 ('C', 'Citigroup Inc'),
 ('SAMAS', 'Sampo A'),

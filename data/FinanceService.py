@@ -2,15 +2,16 @@ __author__ = 'daniel'
 
 import json
 import logging
-
+import urllib2
 from googlefinance import getQuotes
-#from yahoo_finance import Share, Currency
+from yahoo_finance import Share, Currency
 
 
 class FinanceService(object):
     def __init__(self):
         self.base_url = ""
         self.base_currency = "SEK"
+
     def get_currency_price(self, currency):
 
         if currency == self.base_currency:
@@ -21,18 +22,35 @@ class FinanceService(object):
         except Exception:
             return "--"
 
-    def get_stock_price(self, google_symbol, yahoo_symbol):
+    def get_stock_price(self, google_symbol, yahoo_symbol, bloomberg_symbol="KOBRMTFB:SS"):
         try:
-            return getQuotes(google_symbol)[0].get('LastTradePrice')
+            logging.debug("Getting quotes for %s" % google_symbol)
+            quote = getQuotes(google_symbol)
+            logging.debug("%s" % quote)
+            return quote[0].get('LastTradePrice')
         except Exception:
             logging.debug("Google Finance unknown symbol: %s" % google_symbol)
         try:
+            logging.debug("Getting quotes for %s" % yahoo_symbol)
             share = Share(yahoo_symbol)
-            return share.get_price()
+            if share.get_price():
+                return share.get_price()
         except Exception:
             logging.debug("Yahoo Finance unknown symbol: %s" % yahoo_symbol)
 
+        try:
+            logging.debug("Getting quotes for %s" % bloomberg_symbol)
+            return self.get_bloomberg_quote(bloomberg_symbol=bloomberg_symbol)
+        except Exception:
+            logging.error("Bloomberg unknown symbol: %s" % bloomberg_symbol)
+
         return "--"
+
+    def get_bloomberg_quote(self, bloomberg_symbol):
+        url = "https://www.bloomberg.com/markets/chart/data/1D/%s" % bloomberg_symbol
+        htmltext = urllib2.urlopen(url)
+        data = json.load(htmltext)
+        return data["data_values"][-1][-1]
 
 class GoogleFinance(FinanceService):
 

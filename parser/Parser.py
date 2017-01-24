@@ -2,7 +2,7 @@
 
 __author__ = 'daniel'
 from datetime import datetime
-
+import logging
 from Transaction import Buy, Sell, Dividend, Transfer, Split
 
 
@@ -17,7 +17,7 @@ class Parser(object):
 
         date_object = datetime.strptime(date, "%Y-%m-%d")
         transaction_type = transaction_type.decode("latin1")
-        #print date, transaction_type, description.decode("latin1"), units, price, cost, currency, fee
+        logging.debug("%s" % ([date, transaction_type, description.decode("latin1"), units, price, amount, currency]))
         if transaction_type == u"Utdelning":
             return Dividend(description, date_object, price, units)
         elif transaction_type == u"Köp" or transaction_type.startswith("Teckningslikvid") \

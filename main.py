@@ -19,8 +19,14 @@ parser = argparse.ArgumentParser("Read stock information from Avanza and create 
 
 
 def setup_logging(level, logfile):
-    logging.basicConfig( format='%(asctime)s %(levelname)s %(module)s::%(funcName)s (%(lineno)d) - %(message)s', level=level, filename=logfile, filemode='w')
-
+    format_str = '%(asctime)s %(levelname)s %(module)s::%(funcName)s (%(lineno)d) - %(message)s'
+    formatter = logging.Formatter(format_str)
+    logging.basicConfig( format=format_str, level=level, filename=logfile, filemode='w')
+    root = logging.getLogger()
+    ch = logging.StreamHandler(sys.stdout)
+    ch.setFormatter(formatter)
+    ch.setLevel(level)
+    root.addHandler(ch)
 
 
 def compare_files(file1, file2):
@@ -57,13 +63,7 @@ def read_transaction_rows_from_file(transaction_path):
                         transactions.append(transaction)
     return transactions
 
-def print_stock_summary(stocks):
-    logging.info("Printing stock summary")
-    summary_header = ["Stock", "Units", "Price", "Value"]
-    summary_data = []
-    for stock in stocks:
-        summary_data  = summary_data + stock.get_summary()
-    print tabulate(sorted(summary_data, key=itemgetter(0)), summary_header)
+
 
 def main():
     general_args = parser.add_argument_group("General")

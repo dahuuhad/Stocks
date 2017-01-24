@@ -190,7 +190,6 @@ class Database():
     def query_db(self, query, args=(), one=False):
         # type: (object, object, object) -> object
         logging.debug(query)
-        print query
         cur = self.con.cursor()
         cur.execute(query, args)
         r = [OrderedDict((cur.description[i][0], value) \

@@ -8,6 +8,7 @@ from oauth2client import tools
 from oauth2client.file import Storage
 from datetime import datetime
 from string import ascii_uppercase
+import logging
 
 try:
     import argparse
@@ -80,12 +81,14 @@ class GoogleSheet():
         result = self.service.spreadsheets().values().update(spreadsheetId=self.sheetId, range=rangeName,
                                                              valueInputOption=self.value_input_option, body=body).execute()
 
-    def insert_summary_row(self, start_row, end_row):
+    def insert_summary_row(self, start_row, end_row, summary_row_index):
         summary_row = []
-        summary_columns = 'BCIJOR   '
+        summary_columns = 'BCHILOP'
         for c in ascii_uppercase:
             if c == 'A':
                 summary_row.append('Totalt')
+            elif c == 'D':
+                summary_row.append('=(B%s-H%s)/H%s' % (summary_row_index, summary_row_index, summary_row_index))
             elif c in summary_columns:
                 summary_row.append('=SUM(%s%s:%s%s)' % (c, start_row, c, end_row))
             else:
@@ -109,48 +112,54 @@ class GoogleSheet():
         values = []
 
         row_id = start_row
+
+        stocks = [stock for stock in stocks if stock.total_units > 0]
+        number_of_stocks = len(stocks)
+        summary_row_index = 1+number_of_stocks+2+1
+
         for stock in stocks:
-            row = self.stock_to_row(stock, row_id)
+            row = self.stock_to_row(stock, row_id, summary_row_index)
             if not row:
                 continue
             values.append(row)
             row_id += 1
         empty_rows = self.create_empty_rows(row_id, 2)
         values = values + empty_rows
-        values.append(self.insert_summary_row(start_row, row_id-1))
+        values.append(self.insert_summary_row(start_row, row_id-1, summary_row_index))
         body = {
             'values': values
         }
         result = self.service.spreadsheets().values().update(spreadsheetId=self.sheetId, range=rangeName,
                                                              valueInputOption=self.value_input_option, body=body).execute()
 
-    def stock_to_row(self, stock, row):
+    def stock_to_row(self, stock, row, summary_row):
         if stock.total_units == 0:
-            print stock.name
+            logging.debug("Skipping %s" % stock.name)
             return []
-        total = 100000
         l = []
         l.append(str(stock.name.encode("utf8")))
-        l.append('=H%s*G%s' % (row, row))
-        l.append('=B%s-J%s' % (row, row))
-        l.append('=C%s/J%s' % (row, row))
-        l.append('=GoogleFinance(L%s;"pe")' % row)
-        l.append('=GoogleFinance(L%s;"eps")' % row)
-        l.append('=GoogleFinance(L%s) * M%s' % (row, row))
+        l.append('=E%s*F%s' % (row, row))
+        l.append('=B%s-H%s' % (row, row))
+        l.append('=C%s/H%s' % (row, row))
+        #l.append('=GoogleFinance(L%s;"pe")' % row)
+        #l.append('=GoogleFinance(L%s;"eps")' % row)
+        l.append('=%s*J%s' % (self._float_to_str(stock.get_price()), row))
         l.append('%s' % self._float_to_str(stock.total_units))
         l.append('%s' % self._float_to_str(stock.total_amount/stock.total_units))
-        l.append('=H%s*I%s' % (row, row))
-        l.append('=B%s/%s' % (row, total))
-        l.append(str(stock.google_quote))
+        l.append('=G%s*F%s' % (row, row))
+        l.append('=B%s/B%s' % (row, summary_row))
+        #l.append(str(stock.google_quote))
         if stock.currency == "SEK":
             l.append(1)
         else:
             l.append('=GoogleFinance("CURRENCY:%sSEK")' % str(stock.currency))
         l.append(stock.get_latest_dividend())
-        l.append('=N%s*H%s' % (row, row))
-        l.append('=R%s/J%s' % (row, row))
-        l.append('=O%s/B%s' % (row, row))
+        l.append('=F%s*K%s' % (row, row))
+        l.append('=K%s/G%s' % (row, row))
+        l.append('=K%s/E%s' % (row, row))
         l.append('%s' % self._float_to_str(stock.get_total_dividends()))
+        l.append('%s' % self._float_to_str(stock.realized_gain))
+
         return l
 
     def db_transaction_to_sheet(self, transaction, row):
