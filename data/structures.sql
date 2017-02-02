@@ -3,7 +3,9 @@ CREATE TABLE IF NOT EXISTS stocks (
     signature VARCHAR(8) PRIMARY KEY NOT NULL,
     name VARCHAR(30) NOT NULL,
     exchange VARCHAR(12),
-    currency CHAR(3) NOT NULL DEFAULT 'SEK');
+    currency CHAR(3) NOT NULL DEFAULT 'SEK',
+    dividend_per_year INT NOT NULL DEFAULT 1,
+    dividend_forecast FLOAT NOT NULL DEFAULT 0.0);
 
 DROP TABLE IF EXISTS stock_identifier;
 CREATE TABLE IF NOT EXISTS stock_identifier (
@@ -26,3 +28,4 @@ DROP TABLE IF EXISTS split_ratio;
 CREATE TABLE IF NOT EXISTS split_ratio (
     stock VARCHAR(8) REFERENCES stocks(signature),
     ratio FLOAT NOT NULL DEFAULT 1.0);
+

@@ -153,7 +153,7 @@ class GoogleSheet():
             l.append(1)
         else:
             l.append('=GoogleFinance("CURRENCY:%sSEK")' % str(stock.currency))
-        l.append(stock.get_latest_dividend())
+        l.append('=J%s*%s*%s' % (row, self._float_to_str(stock.get_dividend_forecast()), stock.dividend_per_year))
         l.append('=F%s*K%s' % (row, row))
         l.append('=K%s/G%s' % (row, row))
         l.append('=K%s/E%s' % (row, row))

@@ -23,6 +23,7 @@ class Database():
         self.con = lite.connect(self.db_path)
 
     def setup(self, data_structure_path, initial_data_path):
+        logging.info("Setup database")
         self._read_and_execute_sql_from_file(data_structure_path)
         self._read_and_execute_sql_from_file(initial_data_path)
 
@@ -54,7 +55,7 @@ class Database():
 
     def get_all_stocks(self, start_date=None, end_date=None):
         logging.debug("Get stock information from database")
-        sql = "SELECT signature, name, exchange, currency FROM stocks"
+        sql = "SELECT signature, name, exchange, currency, dividend_per_year, dividend_forecast FROM stocks"
         sql += " ORDER BY name"
         cur = self.con.cursor()
         cur.execute(sql)
@@ -66,7 +67,10 @@ class Database():
             exchange = row[2]
             google = exchange + ":" + signature
             yahoo = signature + "." + signature
-            stock = Stock(signature, row[1], google, yahoo, row[3], 'Aktie', self.get_descriptions(signature))
+            currency = row[3]
+            dividend_per_year = row[4]
+            dividend_forecast = row[5]
+            stock = Stock(signature, row[1], google, yahoo, currency, 'Aktie', self.get_descriptions(signature), dividend_per_year, dividend_forecast)
             transactions = self.get_transactions(signature, start_date=start_date, end_date=end_date)
             for trans in transactions:
                 stock.add_transaction(trans)
@@ -98,6 +102,7 @@ class Database():
             logging.info("Transaction %s saved" % (transactions))
         except lite.IntegrityError, e:
             logging.error(e)
+            logging.error(transactions)
 
     def _get_stock_key_from_description(self, stock_desc):
         sql = 'SELECT stock FROM stock_identifier WHERE identifier = "%s"' % (stock_desc.decode("latin1"))

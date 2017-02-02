@@ -5,7 +5,8 @@ from Transaction import Buy, Sell, Transfer, Split,Dividend
 import logging
 
 class Stock(object):
-    def __init__(self, key, name, google_quote, yahoo_quote, currency, kind = "Aktie", descriptions = []):
+    def __init__(self, key, name, google_quote, yahoo_quote, currency, kind = "Aktie", descriptions = [],
+                 dividend_per_year=1, dividend_forecast=0.0):
         self.key = key
         self.name = name
         self.google_quote = str(google_quote)
@@ -17,6 +18,8 @@ class Stock(object):
         self.transactions = []
         self.kind = kind
         self.descriptions = descriptions
+        self.dividend_per_year = dividend_per_year
+        self.dividend_forecast = dividend_forecast
 
         self.total_amount = 0
         self.total_units  = 0
@@ -56,6 +59,9 @@ class Stock(object):
                 self.realized_gain += 0
                 self.total_amount = 0
             self.transactions.append(transaction)
+
+    def get_dividend_forecast(self):
+        return self.dividend_forecast
 
     def get_latest_dividend(self):
         dividend = 0
