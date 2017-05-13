@@ -18,6 +18,11 @@ class Parser(object):
         date_object = datetime.strptime(date, "%Y-%m-%d")
         transaction_type = transaction_type.decode("latin1")
         logging.debug("%s" % ([date, transaction_type, description.decode("latin1"), units, price, amount, currency]))
+
+        if self._ignore_transaction(transaction_type):
+            logging.debug("Ignoring transaction %s %s" % (date, transaction_type))
+            return None
+
         if transaction_type == u"Utdelning":
             return Dividend(description, date_object, price, units)
         elif transaction_type == u"Köp" or transaction_type.startswith("Teckningslikvid") \
@@ -36,6 +41,9 @@ class Parser(object):
 
         return None
 
+    def _ignore_transaction(self, transaction_type):
+        logging.debug("Transaction type: %s" % transaction_type)
+        return "1455005" in transaction_type or "Roger" in transaction_type;
 
     def _transaction_is_transfer(self, transaction_type):
         # print transaction_type, transaction_type.startswith(u'Överföring'), transaction_type.startswith(u'Övf')

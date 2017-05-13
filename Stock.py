@@ -1,5 +1,4 @@
 __author__ = 'daniel'
-import logging
 from data.FinanceService import FinanceService, GoogleFinance, YahooFinance
 from Transaction import Buy, Sell, Transfer, Split,Dividend
 import logging
@@ -25,13 +24,26 @@ class Stock(object):
         self.total_units  = 0
         self.total_dividends = 0
         self.realized_gain = 0
+        self.prices = dict()
 
+    def get_total_price(self):
+        if self.total_units == 0:
+            return 0
+        return self.total_amount/self.total_units
 
-    def get_price(self):
+    def add_price(self, date, price):
+        self.prices[date] = price
+
+    def get_price(self, start_date=None, end_date=None):
+        if start_date or end_date:
+            return self.finance_service.get_historical_price(self.yahoo_quote, start_date=start_date, end_date=end_date)
         return self.finance_service.get_stock_price(self.google_quote, self.yahoo_quote)
 
     def has_description(self, description):
         return description in self.descriptions or self.key == description
+
+    def gain_of_transaction(self, transaction):
+        return ((transaction.amount/transaction.units)-(self.total_amount/self.total_units))*transaction.units
 
     def add_transaction(self, transaction):
         add_transaction = True
@@ -47,16 +59,17 @@ class Stock(object):
         elif isinstance(transaction, Buy):
             self.total_units += transaction.units
             self.total_amount += transaction.amount
-            logging.debug("%s" % ([self.name, self.total_amount, transaction.amount]))
+            logging.debug("%s" % ([self.name, type(transaction), self.total_amount, transaction.amount, self.total_units, transaction.units]))
 
         elif isinstance(transaction, Sell):
+            logging.debug(transaction)
+            self.realized_gain += self.gain_of_transaction(transaction)
             self.total_units -= transaction.units
             self.total_amount -= transaction.amount
-            logging.debug("%s" % ([self.name, self.total_amount, transaction.amount]))
+            logging.debug("%s" % ([self.name, type(transaction), self.total_amount, transaction.amount, self.total_units, transaction.units, self.realized_gain]))
 
         if add_transaction:
             if self.total_units == 0:
-                self.realized_gain += 0
                 self.total_amount = 0
             self.transactions.append(transaction)
 

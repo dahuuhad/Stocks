@@ -53,7 +53,17 @@ class Database():
             descriptions.append(row[0])
         return descriptions
 
-    def get_all_stocks(self, start_date=None, end_date=None):
+    def get_prices(self, stock):
+        sql = "SELECT price_date, price from prices WHERE stock = '%s'" % (stock)
+        cur = self.con.cursor()
+        cur.execute(sql)
+        rows = cur.fetchall()
+        prices = []
+        for row in rows:
+            prices.append((row[0], row[1]))
+        return prices
+
+    def get_all_stocks(self, start_date=None, end_date=None, in_portfolio=True):
         logging.debug("Get stock information from database")
         sql = "SELECT signature, name, exchange, currency, dividend_per_year, dividend_forecast FROM stocks"
         sql += " ORDER BY name"
@@ -66,7 +76,9 @@ class Database():
             signature = row[0]
             exchange = row[2]
             google = exchange + ":" + signature
-            yahoo = signature + "." + signature
+            yahoo = signature
+            if len(exchange) == 3:
+                yahoo += "." + exchange[:2]
             currency = row[3]
             dividend_per_year = row[4]
             dividend_forecast = row[5]
@@ -74,8 +86,24 @@ class Database():
             transactions = self.get_transactions(signature, start_date=start_date, end_date=end_date)
             for trans in transactions:
                 stock.add_transaction(trans)
-            stocks.append(stock)
+            prices = self.get_stock_prices(signature, start_date, end_date)
+            for price in prices:
+                stock.add_price(date=price[0], price=price[1])
+            if in_portfolio and stock.total_units > 0:
+                stocks.append(stock)
+            elif not in_portfolio and stock.total_units == 0:
+                stocks.append(stock)
         return stocks
+
+    def get_stock_prices(self, signature, start_date, end_date):
+        return []
+
+    def save_price(self, stock, date, price):
+        logging.info("Saving historical price for %s" % (stock))
+        sql = "INSERT OR REPLACE INTO prices (stock, price_date, price) VALUES (%s, %s, %s)" % (stock, date, price)
+        cur = self.con.cursor()
+        cur.execute(sql)
+        self.con.commit()
 
     def save_transactions(self, new_transactions):
         logging.info("Saving %s new transactions" % len(new_transactions))
@@ -166,10 +194,10 @@ class Database():
             sql += " %s signature = '%s'" % (sql_operator, stock)
             sql_operator = "AND"
         if start_date:
-            sql += " %s trans_date >= %s" % (sql_operator, start_date)
+            sql += " %s trans_date >= '%s'" % (sql_operator, start_date)
             sql_operator = "AND"
         if end_date:
-            sql += " %s trans_date =< %s" % (sql_operator, end_date)
+            sql += " %s trans_date <= '%s'" % (sql_operator, end_date)
             sql_operator = "AND"
         sql += " ORDER BY trans_date ASC"
         result = self.query_db(sql)
@@ -183,7 +211,7 @@ class Database():
                 transactions.append(Buy(trans.get('stock'), trans.get('trans_date'), trans.get('price'), trans.get('units'),
                                   trans.get('fees')))
             elif trans.get('trans_type') == "Dividend":
-                transactions.append(Dividend(trans.get('stock'), trans.get('trans_date'), trans.get('price'), trans.get('units')))
+                transactions.append(Dividend(trans.get('name'), trans.get('trans_date'), trans.get('price'), trans.get('units')))
             elif trans.get('trans_type') == "Split":
                 transactions.append(Split(trans.get('stock'), trans.get('trans_date'), trans.get('split_ratio')))
         return transactions

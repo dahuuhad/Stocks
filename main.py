@@ -13,6 +13,7 @@ from Stock import Stock
 from data.Database import Database
 from spreadsheet.GoogleSheet import GoogleSheet
 from oauth2client import tools
+from datetime import datetime
 
 parser = argparse.ArgumentParser("Read stock information from Avanza and create a Google Sheet",
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter, parents=[tools.argparser])
@@ -106,12 +107,20 @@ def main():
         sheet_id = args.sheet_id
         args = None
         sheet = GoogleSheet(sheet_id)
-        dividends = db.get_transactions("Dividend")
+        dividends = db.get_transactions(transaction_type="Dividend")
         sheet.write_transactions("Utdelningar", dividends)
 
-        stocks = db.get_all_stocks()
+        stocks = db.get_all_stocks(in_portfolio=True)
         sheet.write_stock_summary("Portfolio", stocks)
 
+        # for year in range(2006,2007):
+        #     end_date = datetime(year, 12, 31).strftime("%Y-%m-%d")
+        #     start_date = datetime(year, 12, 24).strftime("%Y-%m-%d")
+        #     stocks = db.get_all_stocks(start_date=None, end_date=end_date, in_portfolio=True)
+        #     sheet.write_stock_summary("%s" % year, stocks, start_date, end_date)
+
+        #stocks = db.get_all_stocks(in_portfolio=False)
+        #sheet.write_stock_summary("Old Portfolio", stocks)
 
 if __name__ == "__main__":
     main()

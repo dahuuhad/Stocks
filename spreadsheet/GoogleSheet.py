@@ -72,7 +72,7 @@ class GoogleSheet():
         rangeName = '%s!%s%s' % (sheet_name, start_col, start_row)
         values = []
         row = start_row
-        for transaction in transactions:
+        for transaction in reversed(transactions):
             values.append(self.db_transaction_to_sheet(transaction, row))
             row += 1
         body = {
@@ -83,7 +83,7 @@ class GoogleSheet():
 
     def insert_summary_row(self, start_row, end_row, summary_row_index):
         summary_row = []
-        summary_columns = 'BCHILOP'
+        summary_columns = 'BCHILOPQ'
         for c in ascii_uppercase:
             if c == 'A':
                 summary_row.append('Totalt')
@@ -104,7 +104,7 @@ class GoogleSheet():
             empty_rows.append(empty_row)
         return empty_rows
 
-    def write_stock_summary(self, sheet_name, stocks):
+    def write_stock_summary(self, sheet_name, stocks, start_date=None, end_date=None):
         start_row = 2
         start_col = 'A'
         rangeName = '%s!%s%s' % (sheet_name, start_col, start_row)
@@ -113,12 +113,12 @@ class GoogleSheet():
 
         row_id = start_row
 
-        stocks = [stock for stock in stocks if stock.total_units > 0]
+        #stocks = [stock for stock in stocks if stock.total_units > 0]
         number_of_stocks = len(stocks)
         summary_row_index = 1+number_of_stocks+2+1
 
         for stock in stocks:
-            row = self.stock_to_row(stock, row_id, summary_row_index)
+            row = self.stock_to_row(stock, row_id, summary_row_index, start_date, end_date)
             if not row:
                 continue
             values.append(row)
@@ -132,23 +132,18 @@ class GoogleSheet():
         result = self.service.spreadsheets().values().update(spreadsheetId=self.sheetId, range=rangeName,
                                                              valueInputOption=self.value_input_option, body=body).execute()
 
-    def stock_to_row(self, stock, row, summary_row):
-        if stock.total_units == 0:
-            logging.debug("Skipping %s" % stock.name)
-            return []
+
+    def stock_to_row(self, stock, row, summary_row, start_date=None, end_date=None):
         l = []
         l.append(str(stock.name.encode("utf8")))
         l.append('=E%s*F%s' % (row, row))
         l.append('=B%s-H%s' % (row, row))
         l.append('=C%s/H%s' % (row, row))
-        #l.append('=GoogleFinance(L%s;"pe")' % row)
-        #l.append('=GoogleFinance(L%s;"eps")' % row)
-        l.append('=%s*J%s' % (self._float_to_str(stock.get_price()), row))
+        l.append('=%s*J%s' % (self._float_to_str(stock.get_price(start_date, end_date)), row))
         l.append('%s' % self._float_to_str(stock.total_units))
-        l.append('%s' % self._float_to_str(stock.total_amount/stock.total_units))
+        l.append('%s' % self._float_to_str(stock.get_total_price()))
         l.append('=G%s*F%s' % (row, row))
         l.append('=B%s/B%s' % (row, summary_row))
-        #l.append(str(stock.google_quote))
         if stock.currency == "SEK":
             l.append(1)
         else:
@@ -159,16 +154,18 @@ class GoogleSheet():
         l.append('=K%s/E%s' % (row, row))
         l.append('%s' % self._float_to_str(stock.get_total_dividends()))
         l.append('%s' % self._float_to_str(stock.realized_gain))
+        l.append('=O%s+P%s' % (row, row))
 
         return l
 
     def db_transaction_to_sheet(self, transaction, row):
         l = []
-        l.append(datetime.strptime(str(transaction.get('trans_date')), "%Y-%m-%d %H:%M:%S").strftime("%Y-%m-%d"))
-        l.append(str(transaction.get('trans_type')))
-        l.append(str(transaction.get('name').encode("utf8")))
-        l.append(self._float_to_str(transaction.get('units')))
-        l.append(self._float_to_str(transaction.get('price')))
+
+        l.append(datetime.strptime(str(transaction.date), "%Y-%m-%d %H:%M:%S").strftime("%Y-%m-%d"))
+        l.append(str(type(transaction).__name__))
+        l.append(str(transaction.stock.encode("utf8")))
+        l.append(self._float_to_str(transaction.units))
+        l.append(self._float_to_str(transaction.price))
         l.append("=D%s*E%s" % (row, row))
         l.append("=YEAR(A%s)" % row)
         l.append("=MONTH(A%s)" % row)

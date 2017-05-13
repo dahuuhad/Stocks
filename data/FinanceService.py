@@ -22,6 +22,17 @@ class FinanceService(object):
         except Exception:
             return "--"
 
+    def get_historical_price(self, yahoo_symbol, start_date, end_date):
+        try:
+            logging.debug("Getting quotes for %s between %s and %s" % (yahoo_symbol, start_date, end_date))
+            share = Share(yahoo_symbol)
+            price = share.get_historical(start_date, end_date)
+            logging.debug("Historical price is %s"  % price)
+            if price:
+                return float(price[0].get('Close'))
+        except Exception:
+            logging.debug("Yahoo Finance unknown symbol: %s" % yahoo_symbol)
+
     def get_stock_price(self, google_symbol, yahoo_symbol, bloomberg_symbol="KOBRMTFB:SS"):
         try:
             logging.debug("Getting quotes for %s" % google_symbol)
@@ -33,8 +44,9 @@ class FinanceService(object):
         try:
             logging.debug("Getting quotes for %s" % yahoo_symbol)
             share = Share(yahoo_symbol)
-            if share.get_price():
-                return share.get_price()
+            price = share.get_price()
+            if price:
+                return price
         except Exception:
             logging.debug("Yahoo Finance unknown symbol: %s" % yahoo_symbol)
 
@@ -44,6 +56,7 @@ class FinanceService(object):
         except Exception:
             logging.error("Bloomberg unknown symbol: %s" % bloomberg_symbol)
 
+        logging.debug("No stock price found for symbol: %s" % (google_symbol))
         return "--"
 
     def get_bloomberg_quote(self, bloomberg_symbol):

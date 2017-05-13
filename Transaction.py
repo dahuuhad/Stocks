@@ -13,7 +13,6 @@ class Transaction(object):
         return "%s, %s" % (self.date, self.stock )
 
 
-
     @classmethod
     def to_table_header(cls):
         return ["Stock", "Date"]
@@ -99,7 +98,7 @@ class Sell(Transaction):
         self.amount = amount
 
     def __str__(self):
-        return "%s, %s, %s, %s, %s" % (super(Sell, self).__str__(), "Sell", self.units, self.price, self.amount)
+        return "%s, Type=%s, Units=%s, Price=%s, Amount=%s" % (super(Sell, self).__str__(), "Sell", self.units, self.price, self.amount)
 
 
 class Split(Transaction):
