@@ -4,7 +4,7 @@ import json
 import logging
 
 from Stock import Stock
-from Transaction import Dividend, Buy, Sell, Split, Transfer
+from Transaction import Dividend, Buy, Sell, Split, Transfer, Withdrawal, Deposit
 from datetime import datetime
 from collections import OrderedDict
 
@@ -117,13 +117,12 @@ class Database():
     def save_transaction(self, transaction):
         logging.debug("Save transaction (%s)" % transaction)
         stock_key = self._get_stock_key_from_description(transaction.stock)
-        transaction_type = self._get_transaction_type(transaction)
         split_ratio = 1.0
-        if transaction_type == "Split":
+        if transaction.str_type == "Split":
             split_ratio = self._get_split_ratio(stock_key)
         sql = "INSERT INTO transactions (trans_date, trans_type, stock, units, price, fees, split_ratio) VALUES (?, ?, ?, ?, ?, ?, ?)"
         cur = self.con.cursor()
-        transactions = ((transaction.date.strftime("%Y-%m-%d %H:%M:%S"), transaction_type, stock_key, transaction.units, transaction.price, transaction.amount, split_ratio),)
+        transactions = ((transaction.date.strftime("%Y-%m-%d %H:%M:%S"), transaction.str_type, stock_key, transaction.units, transaction.price, transaction.amount, split_ratio),)
         logging.debug(transactions)
         try:
             cur.executemany(sql, transactions)
@@ -133,6 +132,8 @@ class Database():
             logging.error(transactions)
 
     def _get_stock_key_from_description(self, stock_desc):
+        if not stock_desc:
+            return None
         sql = 'SELECT stock FROM stock_identifier WHERE identifier = "%s"' % (stock_desc.decode("latin1"))
         logging.debug(sql)
         cur = self.con.cursor()
@@ -142,20 +143,6 @@ class Database():
             raise UnknownStockException("Unknown stock description %s" % stock_desc)
 
         return str(stock_key[0])
-
-    def _get_transaction_type(self, transaction):
-        if isinstance(transaction, Sell):
-            return "Sell"
-        elif isinstance(transaction, Buy):
-            return "Buy"
-        elif isinstance(transaction, Dividend):
-            return "Dividend"
-        elif isinstance(transaction, Split):
-            return "Split"
-        elif isinstance(transaction, Transfer):
-            return "Transfer"
-        else:
-            raise UnknownTransactionTypeException("Unknow transaction type %s" % type(transaction))
 
     def _get_split_ratio(self, stock_key):
         sql = "SELECT ratio FROM split_ratio WHERE stock = '%s'" % (stock_key)
@@ -185,10 +172,12 @@ class Database():
 
     def get_transactions(self, stock=None, transaction_type=None, start_date=None, end_date=None, return_json=False):
         sql = "SELECT trans_date, trans_type, stock, name, units, price, fees, split_ratio FROM transactions"
+        if not stock:
+            sql += " LEFT"
         sql += " JOIN stocks ON stock=signature"
         sql_operator = "WHERE"
         if transaction_type:
-            sql += " %s trans_type = '%s'" % (sql_operator, transaction_type)
+            sql += " %s trans_type IN (%s)" % (sql_operator, ",".join("'{0}'".format(t) for t in transaction_type))
             sql_operator = "AND"
         if stock:
             sql += " %s signature = '%s'" % (sql_operator, stock)
@@ -214,6 +203,12 @@ class Database():
                 transactions.append(Dividend(trans.get('name'), trans.get('trans_date'), trans.get('price'), trans.get('units')))
             elif trans.get('trans_type') == "Split":
                 transactions.append(Split(trans.get('stock'), trans.get('trans_date'), trans.get('split_ratio')))
+            elif trans.get('trans_type') == "Withdrawal":
+                logging.debug(trans.get('fees'))
+                transactions.append(Withdrawal(trans.get('trans_date'), trans.get('fees')))
+            elif trans.get('trans_type') == "Deposit":
+                transactions.append(Deposit(trans.get('trans_date'), trans.get('fees')))
+
         return transactions
 
     def get_stock_name(self, signature):

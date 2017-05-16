@@ -107,8 +107,12 @@ def main():
         sheet_id = args.sheet_id
         args = None
         sheet = GoogleSheet(sheet_id)
-        dividends = db.get_transactions(transaction_type="Dividend")
+        dividends = db.get_transactions(transaction_type=["Dividend"])
         sheet.write_transactions("Utdelningar", dividends)
+
+        transactions = db.get_transactions(transaction_type=["Deposit", "Withdrawal"])
+        sheet.write_transactions("Transaktioner", transactions)
+
 
         stocks = db.get_all_stocks(in_portfolio=True)
         sheet.write_stock_summary("Portfolio", stocks)

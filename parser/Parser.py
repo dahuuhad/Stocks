@@ -3,7 +3,7 @@
 __author__ = 'daniel'
 from datetime import datetime
 import logging
-from Transaction import Buy, Sell, Dividend, Transfer, Split
+from Transaction import Buy, Sell, Dividend, Transfer, Split, Deposit, Withdrawal
 
 
 class Parser(object):
@@ -38,6 +38,10 @@ class Parser(object):
         elif self._transaction_is_transfer(transaction_type):
             units = self._convert_units_by_transaction_type(transaction_type, units)
             return Transfer(description, date_object, units)
+        elif transaction_type == u"Insättning":
+            return Deposit(date_object, amount)
+        elif transaction_type == u"Uttag":
+            return Withdrawal(date_object, amount)
 
         return None
 

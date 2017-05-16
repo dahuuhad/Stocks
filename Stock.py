@@ -59,14 +59,14 @@ class Stock(object):
         elif isinstance(transaction, Buy):
             self.total_units += transaction.units
             self.total_amount += transaction.amount
-            logging.debug("%s" % ([self.name, type(transaction), self.total_amount, transaction.amount, self.total_units, transaction.units]))
+            logging.debug("%s" % ([self.name, transaction.str_type, self.total_amount, transaction.amount, self.total_units, transaction.units]))
 
         elif isinstance(transaction, Sell):
             logging.debug(transaction)
             self.realized_gain += self.gain_of_transaction(transaction)
             self.total_units -= transaction.units
             self.total_amount -= transaction.amount
-            logging.debug("%s" % ([self.name, type(transaction), self.total_amount, transaction.amount, self.total_units, transaction.units, self.realized_gain]))
+            logging.debug("%s" % ([self.name, transaction.str_type, self.total_amount, transaction.amount, self.total_units, transaction.units, self.realized_gain]))
 
         if add_transaction:
             if self.total_units == 0:

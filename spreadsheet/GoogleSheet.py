@@ -73,7 +73,10 @@ class GoogleSheet():
         values = []
         row = start_row
         for transaction in reversed(transactions):
-            values.append(self.db_transaction_to_sheet(transaction, row))
+            if sheet_name == "Utdelningar":
+                values.append(self.db_dividend_to_sheet(transaction, row))
+            elif sheet_name == "Transaktioner":
+                values.append(self.db_transaction_to_sheet(transaction, row))
             row += 1
         body = {
             'values': values
@@ -158,7 +161,7 @@ class GoogleSheet():
 
         return l
 
-    def db_transaction_to_sheet(self, transaction, row):
+    def db_dividend_to_sheet(self, transaction, row):
         l = []
 
         l.append(datetime.strptime(str(transaction.date), "%Y-%m-%d %H:%M:%S").strftime("%Y-%m-%d"))
@@ -173,8 +176,24 @@ class GoogleSheet():
 
         return l
 
+    def db_transaction_to_sheet(self, transaction, row):
+        l = []
+
+        l.append(datetime.strptime(str(transaction.date), "%Y-%m-%d %H:%M:%S").strftime("%Y-%m-%d"))
+        l.append(str(type(transaction).__name__))
+        l.append(self._float_to_str(transaction.amount))
+        l.append("=YEAR(A%s)" % row)
+        l.append("=MONTH(A%s)" % row)
+        l.append('=text(N(E%s)&"-1";"MMMM")' % row)
+
+        return l
+
     def _float_to_str(self, f):
-        return str(f).replace(".", ",")
+
+        float_str = str(f).replace(".", ",")
+        if f < 0.0:
+            float_str = "-"+float_str
+        return float_str
 
     def read_stocks(self):
         rangeName = 'Innehav!A2:E15'
