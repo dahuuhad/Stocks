@@ -31,7 +31,9 @@ INSERT OR REPLACE INTO stocks (signature, name, exchange, currency, dividend_per
 ('SIGM-B',  'Sigma',            'STO',      'SEK',  1,  0.0),
 ('MULQ',    'MultiQ',           'STO',      'SEK',  1,  0.0),
 ('WM-B',    'WM Data',          'STO',      'SEK',  1,  0.0),
+('ORES',    'Öresund',          'STO',      'SEK',  1,  0.0),
 ('NOVO-B',  'Novo Nordisk',     'CPH',      'DKK',  1,  4.6),
+('O',       'Realty Income',    'NYSE',     'USD',  12, 0.211),
 ('AXFO',    'Axfood',           'STO',      'SEK',  1,  6.0);
 
 
@@ -80,7 +82,9 @@ INSERT OR REPLACE INTO stock_identifier (stock, identifier) VALUES
 ('WM-B', 'WM B'),
 ('SRNKE-B', 'Serneke Group B'),
 ('AXFO', 'Axfood'),
-('SKA-B', 'Skanska B');
+('SKA-B', 'Skanska B'),
+('ORES', 'Öresund'),
+('O', 'Realty Income Corp');
 
 INSERT OR REPLACE INTO split_ratio (stock, ratio) VALUES
 ('AAPL', 7.0),
@@ -89,3 +93,4 @@ INSERT OR REPLACE INTO split_ratio (stock, ratio) VALUES
 ('SBUX', 2.0),
 ('VOLV-B', 6.0),
 ('ERIC-B', 0.2);
+

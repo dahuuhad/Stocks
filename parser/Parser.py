@@ -58,7 +58,8 @@ class Parser(object):
     def num(s):
         try:
             s = s.replace(',', '.')
-            s = s.replace('-', '0')
+            if len(s) == 1:
+                s = s.replace('-', '0')
             return int(s)
         except ValueError:
             return float(s)

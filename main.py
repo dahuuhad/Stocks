@@ -12,7 +12,10 @@ from tabulate import tabulate
 from Stock import Stock
 from data.Database import Database
 from spreadsheet.GoogleSheet import GoogleSheet
-from oauth2client import tools
+try:
+    from oauth2client import tools
+except:
+    pass
 from datetime import datetime
 
 parser = argparse.ArgumentParser("Read stock information from Avanza and create a Google Sheet",

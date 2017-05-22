@@ -26,6 +26,29 @@ class Database():
         logging.info("Setup database")
         self._read_and_execute_sql_from_file(data_structure_path)
         self._read_and_execute_sql_from_file(initial_data_path)
+        self._create_triggers()
+
+    def _create_triggers(self):
+        sql = '''
+            CREATE TRIGGER %s
+            BEFORE %s
+            ON transactions
+            WHEN NEW.stock IS NULL
+            AND NEW.trans_type IN ('Deposit', 'Withdrawal')
+            BEGIN
+            SELECT CASE WHEN((
+                SELECT 1
+                FROM transactions
+                WHERE stock IS NULL
+                AND NEW.trans_date = trans_date AND NEW.fees = fees
+                )
+                NOTNULL) THEN RAISE(ABORT, "error row exists") END;
+            END;'''
+        cur = self.con.cursor()
+        cur.execute(sql % ("UniqueColumnCheckNullInsert", "INSERT"))
+        cur.execute(sql % ("UniqueColumnCheckNullUpdate", "UPDATE"))
+        self.con.commit()
+
 
     def _read_and_execute_sql_from_file(self, sql_file_path):
         logging.debug("Reading sql commands from %s" % sql_file_path)

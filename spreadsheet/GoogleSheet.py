@@ -158,6 +158,7 @@ class GoogleSheet():
         l.append('%s' % self._float_to_str(stock.get_total_dividends()))
         l.append('%s' % self._float_to_str(stock.realized_gain))
         l.append('=O%s+P%s' % (row, row))
+        l.append('=Q%s/H%s' % (row, row))
 
         return l
 

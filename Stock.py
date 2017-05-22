@@ -43,7 +43,7 @@ class Stock(object):
         return description in self.descriptions or self.key == description
 
     def gain_of_transaction(self, transaction):
-        return ((transaction.amount/transaction.units)-(self.total_amount/self.total_units))*transaction.units
+        return (-1*(transaction.amount/transaction.units)-(self.total_amount/self.total_units))*transaction.units*-1
 
     def add_transaction(self, transaction):
         add_transaction = True
@@ -58,13 +58,13 @@ class Stock(object):
             self.total_dividends += transaction.units*transaction.price
         elif isinstance(transaction, Buy):
             self.total_units += transaction.units
-            self.total_amount += transaction.amount
+            self.total_amount -= transaction.amount
             logging.debug("%s" % ([self.name, transaction.str_type, self.total_amount, transaction.amount, self.total_units, transaction.units]))
 
         elif isinstance(transaction, Sell):
             logging.debug(transaction)
             self.realized_gain += self.gain_of_transaction(transaction)
-            self.total_units -= transaction.units
+            self.total_units += transaction.units
             self.total_amount -= transaction.amount
             logging.debug("%s" % ([self.name, transaction.str_type, self.total_amount, transaction.amount, self.total_units, transaction.units, self.realized_gain]))
 
