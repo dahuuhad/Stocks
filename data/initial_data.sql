@@ -4,7 +4,7 @@ INSERT OR REPLACE INTO stocks (signature, name, exchange, currency, dividend_per
 ('BON',     'Bonheur',          'OL',       'NOK',  1,  0.0),
 ('CAST',    'Castellum',        'STO',      'SEK',  2,  2.5),
 ('C',       'Citigroup',        'NYSE',     'USD',  4,  0.0),
-('CLAS-B',  'Clas Olsson',      'STO',      'SEK',  1,  5.75),
+('CLAS-B',  'Clas Olsson',      'STO',      'SEK',  1,  6.25),
 ('KO',      'Coca Cola',        'NYSE',     'USD',  4,  0.35),
 ('DE',      'Deere & Co',       'NYSE',     'USD',  4,  0.6),
 ('ERIC-B',  'Ericsson',         'STO',      'SEK',  1,  0.0),
@@ -33,7 +33,7 @@ INSERT OR REPLACE INTO stocks (signature, name, exchange, currency, dividend_per
 ('WM-B',    'WM Data',          'STO',      'SEK',  1,  0.0),
 ('ORES',    'Öresund',          'STO',      'SEK',  1,  0.0),
 ('NOVO-B',  'Novo Nordisk',     'CPH',      'DKK',  1,  4.6),
-('O',       'Realty Income',    'NYSE',     'USD',  12, 0.211),
+('O',       'Realty Income',    'NYSE',     'USD',  7, 0.211),
 ('AXFO',    'Axfood',           'STO',      'SEK',  1,  6.0);
 
 
@@ -69,6 +69,7 @@ INSERT OR REPLACE INTO stock_identifier (stock, identifier) VALUES
 ('C', 'Citigroup'),
 ('C', 'Citigroup Inc'),
 ('SAMAS', 'Sampo A'),
+('SAMAS', 'Sampo Oyj A'),
 ('TELIA', 'Telia Company'),
 ('NOVO-B', 'Novo Nordisk B'),
 ('WMT', 'Walmart'),

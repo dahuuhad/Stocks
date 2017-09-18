@@ -116,9 +116,13 @@ def main():
         transactions = db.get_transactions(transaction_type=["Deposit", "Withdrawal"])
         sheet.write_transactions("Transaktioner", transactions)
 
-
-        stocks = db.get_all_stocks(in_portfolio=True)
-        sheet.write_stock_summary("Portfolio", stocks)
+        today = datetime.now()
+        start_date = datetime(today.year, 1, 1).strftime("%Y-%m-%d")
+        end_date = datetime(today.year, today.month, today.day).strftime("%Y-%m-%d")
+        stocks = db.get_all_stocks(in_portfolio=True, start_date=start_date, end_date=end_date)
+        start_date = None
+        end_date = None
+        sheet.write_stock_summary("Portfolio", stocks, start_date, end_date)
 
         # for year in range(2006,2007):
         #     end_date = datetime(year, 12, 31).strftime("%Y-%m-%d")

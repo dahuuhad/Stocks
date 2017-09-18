@@ -18,7 +18,7 @@ class Stock(object):
         self.kind = kind
         self.descriptions = descriptions
         self.dividend_per_year = dividend_per_year
-        self.dividend_forecast = dividend_forecast
+        self.dividend_forecast_per_stock = dividend_forecast
 
         self.total_amount = 0
         self.total_units  = 0
@@ -74,7 +74,7 @@ class Stock(object):
             self.transactions.append(transaction)
 
     def get_dividend_forecast(self):
-        return self.dividend_forecast
+        return self.dividend_forecast_per_stock
 
     def get_latest_dividend(self):
         dividend = 0
@@ -86,8 +86,16 @@ class Stock(object):
                 dividend += trans.price
         return dividend
 
+
     def get_total_dividends(self, start_date=None, end_date=None):
-        return self.total_dividends
+        if not start_date and not end_date:
+            return self.total_dividends
+        else:
+            total_dividends = 0
+            for trans in self.transactions:
+                if isinstance(trans, Dividend) and trans.date >= start_date and trans.date <= end_date:
+                    total_dividends += trans.amount
+            return total_dividends
 
     def calculate_transaction_average(self, transaction):
         if False and self.currency == "SEK":

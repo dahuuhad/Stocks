@@ -86,7 +86,7 @@ class GoogleSheet():
 
     def insert_summary_row(self, start_row, end_row, summary_row_index):
         summary_row = []
-        summary_columns = 'BCHILOPQ'
+        summary_columns = 'BCHILMPQR'
         for c in ascii_uppercase:
             if c == 'A':
                 summary_row.append('Totalt')
@@ -147,25 +147,35 @@ class GoogleSheet():
         l.append('%s' % self._float_to_str(stock.get_total_price()))
         l.append('=G%s*F%s' % (row, row))
         l.append('=B%s/B%s' % (row, summary_row))
+        # J = Currency
         if stock.currency == "SEK":
             l.append(1)
         else:
             l.append('=GoogleFinance("CURRENCY:%sSEK")' % str(stock.currency))
-        l.append('=J%s*%s*%s' % (row, self._float_to_str(stock.get_dividend_forecast()), stock.dividend_per_year))
+        # K = Utdelning/Aktie
+        l.append('=J%s*%s*T%s' % (row, self._float_to_str(stock.get_dividend_forecast()), row))
+        # L = Arets utdelning
+        if start_date and end_date:
+            l.append('=%s' % (self._float_to_str(stock.get_total_dividends(start_date, end_date))))
+        else:
+            l.append('=%s' % (self._float_to_str(stock.get_total_dividends(datetime(datetime.today().year, 1, 1).date(),
+                                                                           datetime(datetime.today().year, 12, 31).date()))))
+
+        # M = Utdelningsprognos
         l.append('=F%s*K%s' % (row, row))
         l.append('=K%s/G%s' % (row, row))
         l.append('=K%s/E%s' % (row, row))
         l.append('%s' % self._float_to_str(stock.get_total_dividends()))
         l.append('%s' % self._float_to_str(stock.realized_gain))
-        l.append('=O%s+P%s' % (row, row))
-        l.append('=Q%s/H%s' % (row, row))
+        l.append('=P%s+Q%s' % (row, row))
+        l.append('=R%s/H%s' % (row, row))
+        l.append('%s' % self._float_to_str(stock.dividend_per_year))
 
         return l
 
     def db_dividend_to_sheet(self, transaction, row):
         l = []
-
-        l.append(datetime.strptime(str(transaction.date), "%Y-%m-%d %H:%M:%S").strftime("%Y-%m-%d"))
+        l.append(str(transaction.date))
         l.append(str(type(transaction).__name__))
         l.append(str(transaction.stock.encode("utf8")))
         l.append(self._float_to_str(transaction.units))
@@ -180,7 +190,7 @@ class GoogleSheet():
     def db_transaction_to_sheet(self, transaction, row):
         l = []
 
-        l.append(datetime.strptime(str(transaction.date), "%Y-%m-%d %H:%M:%S").strftime("%Y-%m-%d"))
+        l.append(str(transaction.date))
         l.append(str(type(transaction).__name__))
         l.append(self._float_to_str(transaction.amount))
         l.append("=YEAR(A%s)" % row)

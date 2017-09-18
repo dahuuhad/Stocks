@@ -7,13 +7,13 @@ from Transaction import Buy, Sell, Dividend, Transfer, Split, Deposit, Withdrawa
 
 
 class Parser(object):
-    def parse_row(self, date, account, transaction_type, description, units, price, amount, currency, isin=None):
+    def parse_row(self, date, account, transaction_type, description, units, price, amount, fee, currency, isin=None):
         if date == "Datum" and account == "Konto":
             return None
         units = self.num(units)
         price = self.num(price)
         amount = self.num(amount)
-        #fee = amount - units * price
+        fee = self.num(fee)
 
         date_object = datetime.strptime(date, "%Y-%m-%d")
         transaction_type = transaction_type.decode("latin1")

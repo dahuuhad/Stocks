@@ -5,7 +5,7 @@ import logging
 
 from Stock import Stock
 from Transaction import Dividend, Buy, Sell, Split, Transfer, Withdrawal, Deposit
-from datetime import datetime
+from datetime import datetime, date
 from collections import OrderedDict
 
 class UnknownStockException(Exception):
@@ -86,6 +86,20 @@ class Database():
             prices.append((row[0], row[1]))
         return prices
 
+    def dividends_this_year(self, stock):
+        logging.debug("Dividends received during they year")
+        today = date(datetime.today().year, 1, 1).strftime("%Y-%m-%d")
+        logging.debug("Today: %s" % today)
+        sql = "SELECT COUNT(DISTINCT trans_date) FROM transactions WHERE trans_type = 'Dividend' AND"
+        sql += " stock = '%s' AND trans_date > '%s'" % (stock, today)
+        logging.debug(sql)
+        cur = self.con.cursor()
+        cur.execute(sql)
+        rows = cur.fetchall()
+        for row in rows:
+            return row[0]
+        return 0
+
     def get_all_stocks(self, start_date=None, end_date=None, in_portfolio=True):
         logging.debug("Get stock information from database")
         sql = "SELECT signature, name, exchange, currency, dividend_per_year, dividend_forecast FROM stocks"
@@ -105,8 +119,14 @@ class Database():
             currency = row[3]
             dividend_per_year = row[4]
             dividend_forecast = row[5]
-            stock = Stock(signature, row[1], google, yahoo, currency, 'Aktie', self.get_descriptions(signature), dividend_per_year, dividend_forecast)
-            transactions = self.get_transactions(signature, start_date=start_date, end_date=end_date)
+
+            if dividend_per_year == 0:
+                dividend_per_year = row[4]
+
+            stock = Stock(signature, row[1], google, yahoo, currency, 'Aktie', self.get_descriptions(signature),
+                          dividend_per_year, dividend_forecast)
+
+            transactions = self.get_transactions(signature, start_date=None, end_date=None)
             for trans in transactions:
                 stock.add_transaction(trans)
             prices = self.get_stock_prices(signature, start_date, end_date)

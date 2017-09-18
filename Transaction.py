@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 __author__ = 'daniel'
 
+from datetime import datetime
 
 class Transaction(object):
     def __init__(self, type, stock, date):
         self.stock = stock
-        self.date = date
+        self.date = datetime.strptime(date, '%Y-%m-%d %H:%M:%S').date()
         self.units = 0.0
         self.price = 0.0
         self.amount = 0.0
@@ -48,6 +49,7 @@ class Dividend(Transaction):
         super(Dividend, self).__init__("Dividend", stock, date)
         self.units = units
         self.price = price
+        self.amount = self.units*self.price
 
     def __str__(self):
         return "%s, %s, %s" % (super(Dividend, self).__str__(), self.units, self.price)
