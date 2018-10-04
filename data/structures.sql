@@ -7,6 +7,12 @@ CREATE TABLE IF NOT EXISTS stocks (
     dividend_per_year INT NOT NULL DEFAULT 1,
     dividend_forecast FLOAT NOT NULL DEFAULT 0.0);
 
+DROP TABLE IF EXISTS stock_bloomberg;
+CREATE TABLE IF NOT EXISTS stock_bloomberg (
+    stock VARCHAR(8) REFERENCES stocks(signature),
+    bloomberg_signature VARCHAR(20) UNIQUE NOT NULL,
+    PRIMARY KEY(stock, bloomberg_signature));
+
 DROP TABLE IF EXISTS prices;
 CREATE TABLE IF NOT EXISTS prices (
     stock VARCHAR(8) REFERENCES stocks(signature),

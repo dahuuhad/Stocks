@@ -5,7 +5,7 @@ import logging
 
 class Stock(object):
     def __init__(self, key, name, google_quote, yahoo_quote, currency, kind = "Aktie", descriptions = [],
-                 dividend_per_year=1, dividend_forecast=0.0):
+                 dividend_per_year=1, dividend_forecast=0.0, bloomberg_quote=None):
         self.key = key
         self.name = name
         self.google_quote = str(google_quote)
@@ -14,6 +14,7 @@ class Stock(object):
         self.finance_service = FinanceService()
         self.google_finance = GoogleFinance()
         self.yahoo_finance = YahooFinance()
+        self.bloomberg_finance = bloomberg_quote
         self.transactions = []
         self.kind = kind
         self.descriptions = descriptions
@@ -37,7 +38,7 @@ class Stock(object):
     def get_price(self, start_date=None, end_date=None):
         if start_date or end_date:
             return self.finance_service.get_historical_price(self.yahoo_quote, start_date=start_date, end_date=end_date)
-        return self.finance_service.get_stock_price(self.google_quote, self.yahoo_quote)
+        return self.finance_service.get_stock_price(self.google_quote, self.yahoo_quote, self.bloomberg_finance)
 
     def has_description(self, description):
         return description in self.descriptions or self.key == description
@@ -108,7 +109,7 @@ class Stock(object):
         return ["Name", "Price", "Currency", "Currency price"]
 
     def to_table(self):
-        stock_price = self.finance_service.get_stock_price(self.google_quote, self.yahoo_quote)
+        stock_price = self.finance_service.get_stock_price(self.google_quote, self.yahoo_quote, self.bloomberg_finance)
         currency_price = self.finance_service.get_currency_price(self.currency)
 
         #google_price =  self.google_finance.get_stock_price(self.google_quote)

@@ -1,8 +1,10 @@
+# -*- coding: utf-8 -*-
+
 __author__ = 'daniel'
 
 import json
 import logging
-import urllib2
+import requests
 from googlefinance import getQuotes
 from yahoo_finance import Share, Currency
 
@@ -33,7 +35,14 @@ class FinanceService(object):
         except Exception:
             logging.debug("Yahoo Finance unknown symbol: %s" % yahoo_symbol)
 
-    def get_stock_price(self, google_symbol, yahoo_symbol, bloomberg_symbol="KOBRMTFB:SS"):
+    def get_stock_price(self, google_symbol, yahoo_symbol, bloomberg_symbol=None):
+        if bloomberg_symbol:
+            try:
+                logging.debug("Getting quotes for %s" % bloomberg_symbol)
+                return self.get_bloomberg_quote(bloomberg_symbol=bloomberg_symbol)
+            except Exception:
+                logging.error("Bloomberg unknown symbol: %s" % bloomberg_symbol)
+
         try:
             logging.debug("Getting quotes for %s" % google_symbol)
             quote = getQuotes(google_symbol)
@@ -41,6 +50,7 @@ class FinanceService(object):
             return quote[0].get('LastTradePrice')
         except Exception:
             logging.debug("Google Finance unknown symbol: %s" % google_symbol)
+
         try:
             logging.debug("Getting quotes for %s" % yahoo_symbol)
             share = Share(yahoo_symbol)
@@ -50,19 +60,18 @@ class FinanceService(object):
         except Exception:
             logging.debug("Yahoo Finance unknown symbol: %s" % yahoo_symbol)
 
-        try:
-            logging.debug("Getting quotes for %s" % bloomberg_symbol)
-            return self.get_bloomberg_quote(bloomberg_symbol=bloomberg_symbol)
-        except Exception:
-            logging.error("Bloomberg unknown symbol: %s" % bloomberg_symbol)
 
         logging.debug("No stock price found for symbol: %s" % (google_symbol))
         return "--"
 
     def get_bloomberg_quote(self, bloomberg_symbol):
         url = "https://www.bloomberg.com/markets/chart/data/1D/%s" % bloomberg_symbol
-        htmltext = urllib2.urlopen(url)
-        data = json.load(htmltext)
+        print url
+        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:20.0) Gecko/20100101 Firefox/20.0'}
+
+        response = requests.get(url, headers=headers)
+        print response.text
+        data = json.loads(response.text)
         return data["data_values"][-1][-1]
 
 class GoogleFinance(FinanceService):

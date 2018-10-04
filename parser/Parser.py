@@ -24,24 +24,25 @@ class Parser(object):
             return None
 
         if transaction_type == u"Utdelning":
-            return Dividend(description, date_object, price, units)
+            return Dividend(description, date, price, units)
         elif transaction_type == u"Köp" or transaction_type.startswith("Teckningslikvid") \
-                or transaction_type.startswith("OMVANDLING") or transaction_type.startswith("BANCO SANT VP UTD"):
+                or transaction_type.startswith("OMVANDLING") or transaction_type.startswith("BANCO SANT VP UTD") \
+                or transaction_type.startswith("VP-UTD") or transaction_type.startswith("VPU AV MTG B"):
             #print date, transaction_type, description, units
-            return Buy(description, date_object, price, units, amount)
+            return Buy(description, date, price, units, amount)
         elif transaction_type == u"Sälj":
             #print date, transaction_type, description, units
-            return Sell(description, date_object, price, units, amount)
+            return Sell(description, date, price, units, amount)
         elif transaction_type == u"Split" or transaction_type == u"Omvänd split":
             #print date, transaction_type, description, units
-            return Split(description, date_object, units)
+            return Split(description, date, units)
         elif self._transaction_is_transfer(transaction_type):
             units = self._convert_units_by_transaction_type(transaction_type, units)
-            return Transfer(description, date_object, units)
+            return Transfer(description, date, units)
         elif transaction_type == u"Insättning":
-            return Deposit(date_object, amount)
+            return Deposit(date, amount)
         elif transaction_type == u"Uttag":
-            return Withdrawal(date_object, amount)
+            return Withdrawal(date, amount)
 
         return None
 

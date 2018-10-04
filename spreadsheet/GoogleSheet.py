@@ -141,7 +141,7 @@ class GoogleSheet():
         l.append(str(stock.name.encode("utf8")))
         l.append('=E%s*F%s' % (row, row))
         l.append('=B%s-H%s' % (row, row))
-        l.append('=C%s/H%s' % (row, row))
+        l.append('=IF(H%s=0;B%s/100;C%s/H%s)' % (row, row, row, row))
         l.append('=%s*J%s' % (self._float_to_str(stock.get_price(start_date, end_date)), row))
         l.append('%s' % self._float_to_str(stock.total_units))
         l.append('%s' % self._float_to_str(stock.get_total_price()))
@@ -168,7 +168,7 @@ class GoogleSheet():
         l.append('%s' % self._float_to_str(stock.get_total_dividends()))
         l.append('%s' % self._float_to_str(stock.realized_gain))
         l.append('=P%s+Q%s' % (row, row))
-        l.append('=R%s/H%s' % (row, row))
+        l.append('=IF(H%s=0;B%s/100;R%s/H%s)' % (row, row, row, row))
         l.append('%s' % self._float_to_str(stock.dividend_per_year))
 
         return l
@@ -203,7 +203,7 @@ class GoogleSheet():
 
         float_str = str(f).replace(".", ",")
         if f < 0.0:
-            float_str = "-"+float_str
+            float_str = float_str
         return float_str
 
     def read_stocks(self):

@@ -102,8 +102,10 @@ class Database():
 
     def get_all_stocks(self, start_date=None, end_date=None, in_portfolio=True):
         logging.debug("Get stock information from database")
-        sql = "SELECT signature, name, exchange, currency, dividend_per_year, dividend_forecast FROM stocks"
+        sql = "SELECT signature, name, exchange, currency, dividend_per_year, dividend_forecast, bloomberg_signature FROM stocks"
+        sql += " LEFT OUTER JOIN stock_bloomberg ON signature=stock"
         sql += " ORDER BY name"
+        print sql
         cur = self.con.cursor()
         cur.execute(sql)
         rows = cur.fetchall()
@@ -116,6 +118,9 @@ class Database():
             yahoo = signature
             if len(exchange) == 3:
                 yahoo += "." + exchange[:2]
+            bloomberg = row[6]
+            #if signature == 'KOP':
+            #    bloomberg = "KOBRMTFB:SS"
             currency = row[3]
             dividend_per_year = row[4]
             dividend_forecast = row[5]
@@ -124,7 +129,7 @@ class Database():
                 dividend_per_year = row[4]
 
             stock = Stock(signature, row[1], google, yahoo, currency, 'Aktie', self.get_descriptions(signature),
-                          dividend_per_year, dividend_forecast)
+                          dividend_per_year, dividend_forecast, bloomberg)
 
             transactions = self.get_transactions(signature, start_date=None, end_date=None)
             for trans in transactions:

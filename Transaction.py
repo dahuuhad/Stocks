@@ -6,7 +6,7 @@ from datetime import datetime
 class Transaction(object):
     def __init__(self, type, stock, date):
         self.stock = stock
-        self.date = datetime.strptime(date, '%Y-%m-%d %H:%M:%S').date()
+        self.date = self._string_to_date(date)
         self.units = 0.0
         self.price = 0.0
         self.amount = 0.0
@@ -16,6 +16,12 @@ class Transaction(object):
     def __str__(self):
         return "Type=%s, Date=%s, Stock=%s" % (self.str_type, self.date, self.stock )
 
+    def _string_to_date(self, date_str):
+        try:
+            return datetime.strptime(date_str, '%Y-%m-%d').date()
+        except ValueError:
+            return datetime.strptime(date_str, '%Y-%m-%d %H:%M:%S').date()
+        return None
 
     @classmethod
     def to_table_header(cls):

@@ -124,11 +124,11 @@ def main():
         end_date = None
         sheet.write_stock_summary("Portfolio", stocks, start_date, end_date)
 
-        # for year in range(2006,2007):
-        #     end_date = datetime(year, 12, 31).strftime("%Y-%m-%d")
-        #     start_date = datetime(year, 12, 24).strftime("%Y-%m-%d")
-        #     stocks = db.get_all_stocks(start_date=None, end_date=end_date, in_portfolio=True)
-        #     sheet.write_stock_summary("%s" % year, stocks, start_date, end_date)
+        # for year in range(2016,2017):
+        #      end_date = datetime(year, 12, 31).strftime("%Y-%m-%d")
+        #      start_date = datetime(year, 12, 24).strftime("%Y-%m-%d")
+        #      stocks = db.get_all_stocks(start_date=None, end_date=end_date, in_portfolio=True)
+        #      sheet.write_stock_summary("%s" % year, stocks, start_date, end_date)
 
         #stocks = db.get_all_stocks(in_portfolio=False)
         #sheet.write_stock_summary("Old Portfolio", stocks)
