@@ -8,8 +8,9 @@ from Transaction import Buy, Sell, Dividend, Transfer, Split, Deposit, Withdrawa
 
 class Parser(object):
     def parse_row(self, date, account, transaction_type, description, units, price, amount, fee, currency, isin=None):
-        if date == "Datum" and account == "Konto":
+        if date == "Datum" or account == "Konto":
             return None
+        logging.debug((date, account, units))
         units = self.num(units)
         price = self.num(price)
         amount = self.num(amount)
@@ -63,6 +64,7 @@ class Parser(object):
                 s = s.replace('-', '0')
             return int(s)
         except ValueError:
+            logging.debug("Value error: %s" % s)
             return float(s)
 
 
