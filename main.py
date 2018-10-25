@@ -68,8 +68,7 @@ def read_transaction_rows_from_file(transaction_path):
     return transactions
 
 
-
-def main():
+def parse_args():
     general_args = parser.add_argument_group("General")
     general_args.add_argument("-v", "--verbose", action="store_true", help="Increase logging")
     general_args.add_argument("-l", "--logfile", dest="logfile", default="/tmp/stocks.log", help="Log output file")
@@ -89,6 +88,12 @@ def main():
     database_args.add_argument("--setup_database", action="store_true")
 
     args = parser.parse_args()
+    return args
+
+
+def main():
+    args = parse_args()
+
     if args.database_path is None:
         parser.error("A database path must be provided")
 
