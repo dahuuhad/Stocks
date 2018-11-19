@@ -144,3 +144,11 @@ class Withdrawal(Transaction):
 
     def __str__(self):
         return "%s, %s" % (super(Withdrawal, self).__str__(), self.amount)
+
+class Tax(Transaction):
+    def __init__(self, date, amount):
+        super(Tax, self).__init__("Tax", None, date)
+        self.amount = amount
+
+    def __str__(self):
+        return "%s, %s" % (super(Tax, self).__str__(), self.amount)

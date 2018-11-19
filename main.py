@@ -5,11 +5,7 @@ import os
 import sys
 import logging
 import argparse
-from operator import itemgetter
-from data.DataSource import CvsDataSource
 from parser.Parser import AvanzaTransactionParser
-from tabulate import tabulate
-from Stock import Stock
 from data.Database import Database
 from spreadsheet.GoogleSheet import GoogleSheet
 try:
@@ -108,6 +104,7 @@ def main():
 
     if args.read_transactions:
         new_transactions = read_transaction_rows_from_file(os.path.join(root_path, path_to_cvs_files))
+        logging.debug(new_transactions)
         db.save_transactions(new_transactions)
         db.export_to_json(json_path)
 

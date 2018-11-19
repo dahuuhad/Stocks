@@ -67,7 +67,7 @@ class FinanceService(object):
     def get_bloomberg_quote(self, bloomberg_symbol):
         url = "https://www.bloomberg.com/markets/chart/data/1D/%s" % bloomberg_symbol
         print url
-        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:20.0) Gecko/20100101 Firefox/20.0'}
+        headers = {'User-Agent':'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36'}
 
         response = requests.get(url, headers=headers)
         print response.text

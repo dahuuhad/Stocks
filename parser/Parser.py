@@ -3,27 +3,28 @@
 __author__ = 'daniel'
 from datetime import datetime
 import logging
-from Transaction import Buy, Sell, Dividend, Transfer, Split, Deposit, Withdrawal
+from Transaction import Buy, Sell, Dividend, Transfer, Split, Deposit, Withdrawal, Tax
 
 
 class Parser(object):
     def parse_row(self, date, account, transaction_type, description, units, price, amount, fee, currency, isin=None):
-        if date == "Datum" or account == "Konto":
+        logging.debug(account)
+        if date == "Datum" or account == "Konto" or "Paulina" in account:
+            logging.debug(account)
             return None
-        logging.debug((date, account, units))
+        transaction_type = transaction_type.decode('utf-8')
+        description = description.decode('utf-8')
+        logging.debug((date, account, transaction_type, description, units, price, amount, fee, currency))
         units = self.num(units)
         price = self.num(price)
         amount = self.num(amount)
         fee = self.num(fee)
 
         date_object = datetime.strptime(date, "%Y-%m-%d")
-        transaction_type = transaction_type.decode("latin1")
-        logging.debug("%s" % ([date, transaction_type, description.decode("latin1"), units, price, amount, currency]))
-
-        if self._ignore_transaction(transaction_type):
-            logging.debug("Ignoring transaction %s %s" % (date, transaction_type))
+        logging.debug("%s == %s => %s" % (transaction_type, u"Utdelning", (transaction_type == u"Utdelning")))
+        if self._ignore_transaction(account, transaction_type):
+            logging.debug("Ignoring transaction %s" % ([date, account, transaction_type, description, units, price, amount, fee, currency]))
             return None
-
         if transaction_type == u"Utdelning":
             return Dividend(description, date, price, units)
         elif transaction_type == u"Köp" or transaction_type.startswith("Teckningslikvid") \
@@ -31,7 +32,7 @@ class Parser(object):
                 or transaction_type.startswith("VP-UTD") or transaction_type.startswith("VPU AV MTG B"):
             #print date, transaction_type, description, units
             return Buy(description, date, price, units, amount)
-        elif transaction_type == u"Sälj":
+        elif transaction_type == u"Sälj" or transaction_type == u"Köp, rättelse":
             #print date, transaction_type, description, units
             return Sell(description, date, price, units, amount)
         elif transaction_type == u"Split" or transaction_type == u"Omvänd split":
@@ -44,12 +45,16 @@ class Parser(object):
             return Deposit(date, amount)
         elif transaction_type == u"Uttag":
             return Withdrawal(date, amount)
-
+        elif transaction_type == u"Utländsk källskatt 15%":
+            return None
+            return Tax(date, amount)
+        logging.error("Unknown transaction %s" % (
+        [date, account, transaction_type, description, units, price, amount, fee, currency]))
         return None
 
-    def _ignore_transaction(self, transaction_type):
+    def _ignore_transaction(self, account, transaction_type):
         logging.debug("Transaction type: %s" % transaction_type)
-        return "1455005" in transaction_type or "Roger" in transaction_type;
+        return "Paulina ISK" == account or "1455005" in transaction_type or "Roger" in transaction_type;
 
     def _transaction_is_transfer(self, transaction_type):
         # print transaction_type, transaction_type.startswith(u'Överföring'), transaction_type.startswith(u'Övf')
@@ -64,7 +69,7 @@ class Parser(object):
                 s = s.replace('-', '0')
             return int(s)
         except ValueError:
-            logging.debug("Value error: %s" % s)
+            logging.debug("Error when converting to int, trying float instead: %s" % s)
             return float(s)
 
 

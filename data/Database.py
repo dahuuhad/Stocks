@@ -182,7 +182,7 @@ class Database():
     def _get_stock_key_from_description(self, stock_desc):
         if not stock_desc:
             return None
-        sql = 'SELECT stock FROM stock_identifier WHERE identifier = "%s"' % (stock_desc.decode("latin1"))
+        sql = 'SELECT stock FROM stock_identifier WHERE identifier = "%s"' % (stock_desc)
         logging.debug(sql)
         cur = self.con.cursor()
         cur.execute(sql)
