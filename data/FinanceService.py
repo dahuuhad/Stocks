@@ -113,3 +113,20 @@ class YahooFinance(FinanceService):
             price = "--"
         return price
 
+
+class AvanzaFinance(FinanceService):
+    #=IMPORTXML("https://www.avanza.se/fonder/om-fonden.html/878733/avanza-global"; "// div [@class='SText bold']")
+    # =IMPORTXML("https://www.avanza.se/aktier/om-aktien.html/13477/kopparbergs-b"; "// span [@class='pushBox roundCorners3']")
+    def __init__(self):
+        super(AvanzaFinance, self).__init__()
+
+    def get_currency_price(self, currency):
+        raise NotImplementedError
+
+    def get_stock_price(self, symbol):
+        try:
+            share = Share(symbol)
+            price = share.get_price()
+        except Exception:
+            price = "--"
+        return price

@@ -13,6 +13,14 @@ CREATE TABLE IF NOT EXISTS stock_bloomberg (
     bloomberg_signature VARCHAR(20) UNIQUE NOT NULL,
     PRIMARY KEY(stock, bloomberg_signature));
 
+DROP TABLE IF EXISTS stock_avanza;
+CREATE TABLE IF NOT EXISTS stock_avanza (
+    stock VARCHAR(8) REFERENCES stocks(signature),
+    stock_id INT NOT NULL,
+    stock_name VARCHAR(32) NOT NULL,
+    is_stock INT NOT NULL DEFAULT 1,
+    PRIMARY KEY(stock, stock_id, stock_name, is_stock));
+
 DROP TABLE IF EXISTS prices;
 CREATE TABLE IF NOT EXISTS prices (
     stock VARCHAR(8) REFERENCES stocks(signature),

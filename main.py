@@ -74,6 +74,10 @@ def parse_args():
     general_args.add_argument("--write", dest="write_sheet", action="store_true")
     general_args.add_argument("--no-write", dest="write_sheet", action="store_false")
     parser.set_defaults(write_sheet=True)
+    general_args.add_argument("--no-summary", dest="write_summary", action="store_false")
+    general_args.add_argument("--summary", dest="write_summary", action="store_true")
+    parser.set_defaults(write_summary=True)
+
     read_args = parser.add_argument_group("Read transactions from Avanza CSV export")
     write_args = parser.add_argument_group("Write transactions to Google Sheet")
     write_args.add_argument("--sheet_id", default="1B3ih0RL4zQ_4xV5yO28GDWQSjZRr8TVBYtVm4HGKPA0", help="Google Sheet Id")
@@ -108,15 +112,21 @@ def main():
         db.save_transactions(new_transactions)
         db.export_to_json(json_path)
 
+    sheet_id = args.sheet_id
+    sheet = GoogleSheet(sheet_id)
+
+    if args.write_summary:
+        transactions = db.get_transactions(transaction_type=None)
+        sheet.write_summary("Summary", transactions)
+
+
     if args.write_sheet:
-        sheet_id = args.sheet_id
-        args = None
-        sheet = GoogleSheet(sheet_id)
         dividends = db.get_transactions(transaction_type=["Dividend"])
         sheet.write_transactions("Utdelningar", dividends)
 
         transactions = db.get_transactions(transaction_type=["Deposit", "Withdrawal"])
         sheet.write_transactions("Transaktioner", transactions)
+
 
         today = datetime.now()
         start_date = datetime(today.year, 1, 1).strftime("%Y-%m-%d")

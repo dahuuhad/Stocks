@@ -1,25 +1,32 @@
 __author__ = 'daniel'
-from data.FinanceService import FinanceService, GoogleFinance, YahooFinance
+from data.FinanceService import FinanceService, GoogleFinance, YahooFinance, AvanzaFinance
 from Transaction import Buy, Sell, Transfer, Split,Dividend
 import logging
 
 class Stock(object):
     def __init__(self, key, name, google_quote, yahoo_quote, currency, kind = "Aktie", descriptions = [],
-                 dividend_per_year=1, dividend_forecast=0.0, bloomberg_quote=None):
+                 dividend_per_year=1, dividend_forecast=0.0, bloomberg_quote=None, avanza_id=None, avanza_name=None, is_stock=True):
         self.key = key
         self.name = name
         self.google_quote = str(google_quote)
         self.yahoo_quote = str(yahoo_quote)
         self.currency = currency
-        self.finance_service = FinanceService()
-        self.google_finance = GoogleFinance()
-        self.yahoo_finance = YahooFinance()
+        self.finance_service = AvanzaFinance()
+        #self.google_finance = GoogleFinance()
+        #self.yahoo_finance = YahooFinance()
         self.bloomberg_finance = bloomberg_quote
         self.transactions = []
         self.kind = kind
         self.descriptions = descriptions
         self.dividend_per_year = dividend_per_year
         self.dividend_forecast_per_stock = dividend_forecast
+
+        if is_stock:
+            self.avanza_url = "https://www.avanza.se/aktier/om-aktien.html/%s/%s" % (avanza_id, avanza_name)
+            self.avanza_price = "IMPORTXML(\"%s\"; \"// span [@class='pushBox roundCorners3']\")" % (self.avanza_url)
+        else:
+            self.avanza_url = "https://www.avanza.se/aktier/om-aktien.html/%s/%s" % (avanza_id, avanza_name)
+            self.avanza_price = "IMPORTXML(\"%s\"; \"// div [@class='SText bold']\")" % (self.avanza_url)
 
         self.total_amount = 0
         self.total_units  = 0

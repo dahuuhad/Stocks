@@ -65,6 +65,24 @@ class GoogleSheet():
             print('Storing credentials to ' + credential_path)
         return credentials
 
+    def write_summary(self, sheet_name, transactions):
+        start_row = 2
+        start_col = 'A'
+        start_row = 2
+        start_col = 'A'
+        rangeName = '%s!%s%s' % (sheet_name, start_col, start_row)
+        values = []
+        row = start_row
+        for transaction in reversed(transactions):
+            l = []
+            l.append("=now()")
+            values.append(l)
+        body = {
+            'values': values
+        }
+        result = self.service.spreadsheets().values().update(spreadsheetId=self.sheetId, range=rangeName,
+                                                             valueInputOption=self.value_input_option, body=body).execute()
+
     def write_transactions(self, sheet_name, transactions):
         start_row = 2
         start_col = 'A'
@@ -137,15 +155,16 @@ class GoogleSheet():
 
     def stock_to_row(self, stock, row, summary_row, start_date=None, end_date=None):
         l = []
-        l.append(str(stock.name.encode("utf8")))
-        l.append('=E%s*F%s' % (row, row))
-        l.append('=B%s-H%s' % (row, row))
-        l.append('=IF(H%s=0;B%s/100;C%s/H%s)' % (row, row, row, row))
-        l.append('=%s*J%s' % (self._float_to_str(stock.get_price(start_date, end_date)), row))
-        l.append('%s' % self._float_to_str(stock.total_units))
-        l.append('%s' % self._float_to_str(stock.get_total_price()))
-        l.append('=G%s*F%s' % (row, row))
-        l.append('=B%s/B%s' % (row, summary_row))
+        l.append('=HYPERLINK("%s"; "%s")' % (stock.avanza_url, stock.name)) ## A
+        l.append('=E%s*F%s' % (row, row)) ## B
+        l.append('=B%s-H%s' % (row, row)) ## C
+        l.append('=IF(H%s=0;B%s/100;C%s/H%s)' % (row, row, row, row)) ## D
+##        l.append('=%s*J%s' % (self._float_to_str(stock.get_price(start_date, end_date)), row)) ## E
+        l.append('=%s*J%s' % (stock.avanza_price, row)) ## E
+        l.append('%s' % self._float_to_str(stock.total_units)) ## F
+        l.append('%s' % self._float_to_str(stock.get_total_price())) ## G
+        l.append('=G%s*F%s' % (row, row)) ## H
+        l.append('=B%s/B%s' % (row, summary_row)) ## I
         # J = Currency
         if stock.currency == "SEK":
             l.append(1)
