@@ -43,10 +43,12 @@ INSERT OR REPLACE INTO stocks (signature, name, exchange, currency, dividend_per
 ('MQ',      'MQ',               'STO',      'SEK',  1,  0),
 ('MTG',     'MTG',              'STO',      'SEK',  1,  0),
 ('AVZ-GLO', 'Avanza Global',    'STO',      'SEK',  1,  0),
+('AVZ-ZRO', 'Avanza Zero',    'STO',      'SEK',  1,  0),
 ('LATO-B',  'Latour',           'STO',      'SEK',  1,  2.5);
 
 INSERT OR REPLACE INTO stock_avanza (stock, stock_id, stock_name, is_stock) VALUES
 ('AVZ-GLO', 878733, 'avanza-global',    0),
+('AVZ-ZRO', 41567,  'avanza-zero',    0),
 ('KOP',     13477,  'kopparbergs-b',    1),
 ('AXFO',    5465,   'axfood',           1),
 ('SKA-B',   5257,   'skanska-b',        1),
@@ -150,6 +152,8 @@ INSERT OR REPLACE INTO stock_identifier (stock, identifier) VALUES
 ('ORES', 'Öresund'),
 ('O', 'Realty Income Corp'),
 ('LATO-B', 'Latour B'),
+('AVZ-GLO', 'Avanza Global'),
+('AVZ-ZRO', 'Avanza Zero'),
 ('KINV-B', 'Kinnevik B');
 
 INSERT OR REPLACE INTO split_ratio (stock, ratio) VALUES

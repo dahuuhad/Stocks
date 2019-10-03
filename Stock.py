@@ -25,7 +25,7 @@ class Stock(object):
             self.avanza_url = "https://www.avanza.se/aktier/om-aktien.html/%s/%s" % (avanza_id, avanza_name)
             self.avanza_price = "IMPORTXML(\"%s\"; \"// span [@class='pushBox roundCorners3']\")" % (self.avanza_url)
         else:
-            self.avanza_url = "https://www.avanza.se/aktier/om-aktien.html/%s/%s" % (avanza_id, avanza_name)
+            self.avanza_url = "https://www.avanza.se/fonder/om-fonden.html/%s/%s" % (avanza_id, avanza_name)
             self.avanza_price = "IMPORTXML(\"%s\"; \"// div [@class='SText bold']\")" % (self.avanza_url)
 
         self.total_amount = 0
