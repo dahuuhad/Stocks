@@ -1,13 +1,15 @@
 __author__ = 'daniel'
 
+import argparse
 import csv
+import logging
 import os
 import sys
-import logging
-import argparse
-from parser.Parser import AvanzaTransactionParser
+
 from data.Database import Database
+from parser.Parser import AvanzaTransactionParser
 from spreadsheet.GoogleSheet import GoogleSheet
+
 try:
     from oauth2client import tools
 except:
@@ -145,6 +147,22 @@ def main():
         #stocks = db.get_all_stocks(in_portfolio=False)
         #sheet.write_stock_summary("Old Portfolio", stocks)
 
+
+def _get_fund_price(id):
+    import requests
+    from bs4 import BeautifulSoup
+    response = requests.get("https://www.affarsvarlden.se/bors/fonder/funds-details/%s/funds/" % (id))
+    print(response.url)
+    soup = BeautifulSoup(response.text, 'html.parser')
+    for table in soup.find("table", class_="table afv-table-body"):
+        for tr in table.find_all("tr", class_=""):
+            if len(tr) == 0:
+                continue
+            return tr.find_all("span", class_="is-positive")[-1].get_text(strip=True)
+
 if __name__ == "__main__":
     main()
+    _get_fund_price(22464)
+    _get_fund_price(3904983)
+
     sys.exit(0)

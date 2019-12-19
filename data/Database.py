@@ -1,12 +1,13 @@
-import sqlite3 as lite
-import os
 import json
 import logging
+import os
+import sqlite3 as lite
+from collections import OrderedDict
+from datetime import datetime, date
 
 from Stock import Stock
-from Transaction import Dividend, Buy, Sell, Split, Transfer, Withdrawal, Deposit
-from datetime import datetime, date
-from collections import OrderedDict
+from Transaction import Dividend, Buy, Sell, Split, Withdrawal, Deposit
+
 
 class UnknownStockException(Exception):
     pass
@@ -103,11 +104,11 @@ class Database():
     def get_all_stocks(self, start_date=None, end_date=None, in_portfolio=True):
         logging.debug("Get stock information from database")
         sql = "SELECT signature, name, exchange, currency, dividend_per_year, dividend_forecast, bloomberg_signature"
-        sql += " ,stock_id, stock_name, is_stock FROM stocks"
+        sql += " ,stock_id, stock_name, IFNULL(is_stock, 1) is_stock FROM stocks"
         sql += " LEFT OUTER JOIN stock_bloomberg ON signature=stock_bloomberg.stock"
         sql += " LEFT OUTER JOIN stock_avanza ON signature=stock_avanza.stock"
         sql += " ORDER BY name"
-        print sql
+        logging.debug(sql)
         cur = self.con.cursor()
         cur.execute(sql)
         rows = cur.fetchall()

@@ -1,4 +1,4 @@
-INSERT OR REPLACE INTO stocks (signature, name, exchange, currency, dividend_per_year, dividend_forecast) VALUES
+insert OR REPLACE INTO stocks (signature, name, exchange, currency, dividend_per_year, dividend_forecast) VALUES
 ('KOP',     'Kopparbergs',      'STO',      'SEK',  1,  5.90),
 ('AAPL',    'Apple Inc',        'NASDAQ',   'USD',  4,  0.57),
 ('BON',     'Bonheur',          'OL',       'NOK',  1,  0.0),
@@ -16,6 +16,7 @@ INSERT OR REPLACE INTO stocks (signature, name, exchange, currency, dividend_per
 ('MCD',     'McDonalds',        'NYSE',     'USD',  4,  0.0),
 ('PROTCT',  'Protector',        'OL',       'NOK',  1,  0.0),
 ('SAMPO',   'Sampoo',           'HEL',      'EUR',  1,  2.85),
+('NDA',     'Nordea',           'HEL',      'EUR',  1,  0.69),
 ('SAN',     'Banco Santander',  'NYSE',     'USD',  4,  0.0),
 ('TELIA',   'Telia',            'STO',      'SEK',  2,  1.18),
 ('VOLV-B',  'Volvo',            'STO',      'SEK',  1,  3.0),
@@ -42,11 +43,12 @@ INSERT OR REPLACE INTO stocks (signature, name, exchange, currency, dividend_per
 ('BILIA-A', 'Bilia',            'STO',      'SEK',  1,  0),
 ('MQ',      'MQ',               'STO',      'SEK',  1,  0),
 ('MTG',     'MTG',              'STO',      'SEK',  1,  0),
+('TIGO',   'Millicom',         'STO',      'SEK',  1,  1.32),
 ('AVZ-GLO', 'Avanza Global',    'STO',      'SEK',  1,  0),
 ('AVZ-ZRO', 'Avanza Zero',    'STO',      'SEK',  1,  0),
 ('LATO-B',  'Latour',           'STO',      'SEK',  1,  2.5);
 
-INSERT OR REPLACE INTO stock_avanza (stock, stock_id, stock_name, is_stock) VALUES
+insert OR REPLACE INTO stock_avanza (stock, stock_id, stock_name, is_stock) VALUES
 ('AVZ-GLO', 878733, 'avanza-global',    0),
 ('AVZ-ZRO', 41567,  'avanza-zero',    0),
 ('KOP',     13477,  'kopparbergs-b',    1),
@@ -63,17 +65,20 @@ INSERT OR REPLACE INTO stock_avanza (stock, stock_id, stock_name, is_stock) VALU
 ('NOVO-B',  52300,  'novo-nordisk-b',   1),
 ('O',       147048, 'realty-income-corp',1),
 ('SAMPO',   52810,  'sampo-oyj-a',      1),
+('NDA',     888677, 'nordea-bank-abp',  1),
 ('SWED-A',  5241,   'swedbank-a',       1),
 ('TELIA',   5479,   'telia-company',    1),
+('TIGO',    6048,   'millicom-int--cellular-sdb',    1),
 ('ORES',    5302,   'oresund',          1);
 
-INSERT OR REPLACE INTO stock_bloomberg (stock, bloomberg_signature) VALUES
+insert OR REPLACE INTO stock_bloomberg (stock, bloomberg_signature) VALUES
 ('KOP',     'KOBRMTFB:SS'),
 ('AXFO',    'AXFO:SS'),
 ('BILIA-A', 'BILIA:SS'),
 ('MQ',      'MQ:SS'),
 ('MTG',     'MTGB:SS'),
 ('SKA-B',   'SKAB:SS'),
+('TIGO',    'TIGO:SS'),
 ('ORES',    'ORES:SS'),
 ('TELIA',   'TELIA:SS'),
 ('LATO-B',  'LATOB:SS'),
@@ -87,12 +92,15 @@ INSERT OR REPLACE INTO stock_bloomberg (stock, bloomberg_signature) VALUES
 ('INDU-C',  'INDUC:SS'),
 ('INVE-B',  'INVEB:SS'),
 ('SAMPO',   'SAMPO:FH'),
+('NDA',     'NDA:FH'),
 ('NOVO-B',  'NOVOB:DC'),
 ('KO',      'KO:US'),
 ('JNJ',     'JNJ:US'),
-('O',       'O:US');
+('O',       'O:US'),
+('AVZ-GLO', '3904983'),
+('AVZ-ZRO', '22464');
 
-INSERT OR REPLACE INTO stock_identifier (stock, identifier) VALUES
+insert OR REPLACE INTO stock_identifier (stock, identifier) VALUES
 ('AAPL', 'Apple Inc'),
 ('MTG', 'Modern Times Group B'),
 ('MTG', 'MTG B DR'),
@@ -115,6 +123,7 @@ INSERT OR REPLACE INTO stock_identifier (stock, identifier) VALUES
 ('BON', 'Bonheur'),
 ('CLAS-B', 'Clas Ohlson B'),
 ('KO', 'Coca-Cola Co'),
+('TIGO', 'Millicom Int. Cellular SDB'),
 ('DE', 'Deere & Co'),
 ('ERIC-B', 'Ericsson B'),
 ('SHB-B', 'Handelsbanken'),
@@ -152,11 +161,12 @@ INSERT OR REPLACE INTO stock_identifier (stock, identifier) VALUES
 ('ORES', 'Öresund'),
 ('O', 'Realty Income Corp'),
 ('LATO-B', 'Latour B'),
+('NDA', 'Nordea Bank Abp'),
 ('AVZ-GLO', 'Avanza Global'),
 ('AVZ-ZRO', 'Avanza Zero'),
 ('KINV-B', 'Kinnevik B');
 
-INSERT OR REPLACE INTO split_ratio (stock, ratio) VALUES
+insert OR REPLACE INTO split_ratio (stock, ratio) VALUES
 ('AAPL', 7.0),
 ('HM-B', 2.0),
 ('SHB-B', 3.0),

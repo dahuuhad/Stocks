@@ -1,13 +1,13 @@
 #from __future__ import print_function
-import httplib2
 import os
+from datetime import datetime
+from string import ascii_uppercase
 
+import httplib2
 from googleapiclient import discovery
 from oauth2client import client
 from oauth2client import tools
 from oauth2client.file import Storage
-from datetime import datetime
-from string import ascii_uppercase
 
 try:
     import argparse
@@ -181,7 +181,7 @@ class GoogleSheet():
 
         # M = Utdelningsprognos
         l.append('=F%s*K%s' % (row, row))
-        l.append('=K%s/G%s' % (row, row))
+        l.append('=IF(G14=0;0; K%s/G%s)' % (row, row))
         l.append('=K%s/E%s' % (row, row))
         l.append('%s' % self._float_to_str(stock.get_total_dividends()))
         l.append('%s' % self._float_to_str(stock.realized_gain))

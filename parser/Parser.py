@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 
 __author__ = 'daniel'
-from datetime import datetime
 import logging
+from datetime import datetime
+
 from Transaction import Buy, Sell, Dividend, Transfer, Split, Deposit, Withdrawal, Tax
 
 
@@ -29,7 +30,8 @@ class Parser(object):
             return Dividend(description, date, price, units)
         elif transaction_type == u"Köp" or transaction_type.startswith("Teckningslikvid") \
                 or transaction_type.startswith("OMVANDLING") or transaction_type.startswith("BANCO SANT VP UTD") \
-                or transaction_type.startswith("VP-UTD") or transaction_type.startswith("VPU AV MTG B"):
+                or transaction_type.startswith("VP-UTD") or transaction_type.startswith("VPU AV MTG B") \
+                or transaction_type.startswith("Avknoppning") or transaction_type.startswith("Inl"):
             #print date, transaction_type, description, units
             return Buy(description, date, price, units, amount)
         elif transaction_type == u"Sälj" or transaction_type == u"Köp, rättelse":
@@ -46,7 +48,6 @@ class Parser(object):
         elif transaction_type == u"Uttag":
             return Withdrawal(date, amount)
         elif transaction_type == u"Utländsk källskatt 15%":
-            return None
             return Tax(date, amount)
         logging.error("Unknown transaction %s" % (
         [date, account, transaction_type, description, units, price, amount, fee, currency]))
