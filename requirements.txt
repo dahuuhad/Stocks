@@ -17,7 +17,7 @@ colorama==0.3.9
 cryptography==2.2.2
 cycler==0.10.0
 discovery==0.0.4
-Django==1.11.11
+Django==1.11.23
 django-football365==0.2
 docopt==0.6.2
 enum34==1.1.6
