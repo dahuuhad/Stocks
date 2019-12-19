@@ -22,7 +22,7 @@ django-football365==0.2
 docopt==0.6.2
 enum34==1.1.6
 feedparser==5.2.1
-Flask==0.12.2
+Flask==1.0
 foot-fixtures==1.0.3
 football-data==0.1.20
 funcsigs==1.0.2
