@@ -5,7 +5,7 @@ import requests
 from bs4 import BeautifulSoup
 
 from Transaction import Buy, Sell, Split, Dividend
-from data.FinanceService import AvanzaFinance
+from data.FinanceService import FinanceService
 
 
 class Stock(object):
@@ -16,7 +16,7 @@ class Stock(object):
         self.google_quote = str(google_quote)
         self.yahoo_quote = str(yahoo_quote)
         self.currency = currency
-        self.finance_service = AvanzaFinance()
+        self.finance_service = FinanceService()
         #self.google_finance = GoogleFinance()
         #self.yahoo_finance = YahooFinance()
         self.bloomberg_finance = bloomberg_quote
@@ -59,8 +59,6 @@ class Stock(object):
         self.prices[date] = price
 
     def get_price(self, start_date=None, end_date=None):
-        if start_date or end_date:
-            return self.finance_service.get_historical_price(self.yahoo_quote, start_date=start_date, end_date=end_date)
         return self.finance_service.get_stock_price(self.google_quote, self.yahoo_quote, self.bloomberg_finance)
 
     def has_description(self, description):
