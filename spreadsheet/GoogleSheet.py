@@ -1,4 +1,3 @@
-#from __future__ import print_function
 import os
 from datetime import datetime
 from string import ascii_uppercase
@@ -11,9 +10,10 @@ from oauth2client.file import Storage
 
 try:
     import argparse
-    flags=tools.argparser.parse_args(args=[])
 
-    #flags = argparse.ArgumentParser(parents=[tools.argparser]).parse_args()
+    flags = tools.argparser.parse_args(args=[])
+
+    # flags = argparse.ArgumentParser(parents=[tools.argparser]).parse_args()
 except ImportError:
     flags = None
 
@@ -33,7 +33,7 @@ class GoogleSheet():
         discoveryUrl = ('https://sheets.googleapis.com/$discovery/rest?'
                         'version=v4')
         self.service = discovery.build('sheets', 'v4', http=http,
-                                  discoveryServiceUrl=discoveryUrl)
+                                       discoveryServiceUrl=discoveryUrl)
         self.value_input_option = 'USER_ENTERED'
 
     def get_credentials(self):
@@ -60,7 +60,7 @@ class GoogleSheet():
             flags = tools.argparser.parse_args(args=[])
             if flags:
                 credentials = tools.run_flow(flow, store, flags)
-            else: # Needed only for compatibility with Python 2.6
+            else:  # Needed only for compatibility with Python 2.6
                 credentials = tools.run_flow(flow, store)
             print('Storing credentials to ' + credential_path)
         return credentials
@@ -110,8 +110,8 @@ class GoogleSheet():
 
     def create_empty_rows(self, start_row, number_of_empty_rows):
         empty_rows = []
-        for i in range(start_row, start_row+number_of_empty_rows):
-            empty_row =[]
+        for i in range(start_row, start_row + number_of_empty_rows):
+            empty_row = []
             for c in ascii_uppercase:
                 empty_row.append('')
             empty_rows.append(empty_row)
@@ -126,9 +126,9 @@ class GoogleSheet():
 
         row_id = start_row
 
-        #stocks = [stock for stock in stocks if stock.total_units > 0]
+        # stocks = [stock for stock in stocks if stock.total_units > 0]
         number_of_stocks = len(stocks)
-        summary_row_index = 1+number_of_stocks+2+1
+        summary_row_index = 1 + number_of_stocks + 2 + 1
 
         for stock in stocks:
             row = self.stock_to_row(stock, row_id, summary_row_index, start_date, end_date)
@@ -138,23 +138,23 @@ class GoogleSheet():
             row_id += 1
         empty_rows = self.create_empty_rows(row_id, 2)
         values = values + empty_rows
-        values.append(self.insert_summary_row(start_row, row_id-1, summary_row_index))
+        values.append(self.insert_summary_row(start_row, row_id - 1, summary_row_index))
         body = {
             'values': values
         }
 
     def stock_to_row(self, stock, row, summary_row, start_date=None, end_date=None):
         stock_list = []
-        stock_list.append('=HYPERLINK("%s"; "%s")' % (stock.avanza_url, stock.name))  ## A
-        stock_list.append('=E%s*F%s' % (row, row))  ## B
-        stock_list.append('=B%s-H%s' % (row, row))  ## C
-        stock_list.append('=IF(H%s=0;B%s/100;C%s/H%s)' % (row, row, row, row))  ## D
-        ##        stock_list.append('=%s*J%s' % (self._float_to_str(stock.get_price(start_date, end_date)), row)) ## E
-        stock_list.append('=%s*J%s' % (stock.avanza_price, row))  ## E
-        stock_list.append('%s' % self._float_to_str(stock.total_units))  ## F
-        stock_list.append('%s' % self._float_to_str(stock.get_total_price()))  ## G
-        stock_list.append('=G%s*F%s' % (row, row))  ## H
-        stock_list.append('=B%s/B%s' % (row, summary_row))  ## I
+        stock_list.append('=HYPERLINK("%s"; "%s")' % (stock.avanza_url, stock.name))  # A
+        stock_list.append('=E%s*F%s' % (row, row))  # B
+        stock_list.append('=B%s-H%s' % (row, row))  # C
+        stock_list.append('=IF(H%s=0;B%s/100;C%s/H%s)' % (row, row, row, row))  # D
+        #        stock_list.append('=%s*J%s' % (self._float_to_str(stock.get_price(start_date, end_date)), row)) ## E
+        stock_list.append('=%s*J%s' % (stock.avanza_price, row))  # E
+        stock_list.append('%s' % self._float_to_str(stock.total_units))  # F
+        stock_list.append('%s' % self._float_to_str(stock.get_total_price()))  # G
+        stock_list.append('=G%s*F%s' % (row, row))  # H
+        stock_list.append('=B%s/B%s' % (row, summary_row))  # I
         # J = Currency
         if stock.currency == "SEK":
             stock_list.append(1)
@@ -240,5 +240,3 @@ class GoogleSheet():
         }
         rangeName = 'Innehav!A20:E'
         value_input_option = 'USER_ENTERED'
-
-
