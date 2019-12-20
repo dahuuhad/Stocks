@@ -17,7 +17,7 @@ class UnknownTransactionTypeException(Exception):
     pass
 
 
-class Database():
+class Database:
 
     def __init__(self, database_path):
         self.db_path = database_path
@@ -68,7 +68,7 @@ class Database():
         self.con.commit()
 
     def get_descriptions(self, stock):
-        sql = "SELECT identifier from stock_identifier WHERE stock = '%s'" % (stock)
+        sql = "SELECT identifier from stock_identifier WHERE stock = '%s'" % stock
         cur = self.con.cursor()
         cur.execute(sql)
         rows = cur.fetchall()
@@ -78,7 +78,7 @@ class Database():
         return descriptions
 
     def get_prices(self, stock):
-        sql = "SELECT price_date, price from prices WHERE stock = '%s'" % (stock)
+        sql = "SELECT price_date, price from prices WHERE stock = '%s'" % stock
         cur = self.con.cursor()
         cur.execute(sql)
         rows = cur.fetchall()
@@ -149,23 +149,24 @@ class Database():
                 stocks.append(stock)
         return stocks
 
-    def get_stock_prices(self, signature, start_date, end_date):
+    @staticmethod
+    def get_stock_prices(signature, start_date, end_date):
         return []
 
     def save_price(self, stock, date, price):
-        logging.info("Saving historical price for %s" % (stock))
+        logging.debug("Saving historical price for %s" % stock)
         sql = "INSERT OR REPLACE INTO prices (stock, price_date, price) VALUES (%s, %s, %s)" % (stock, date, price)
         cur = self.con.cursor()
         cur.execute(sql)
         self.con.commit()
 
     def save_transactions(self, new_transactions):
-        logging.info("Saving %s new transactions" % len(new_transactions))
+        logging.debug("Saving %s new transactions" % len(new_transactions))
         for transaction in new_transactions:
             try:
                 self.save_transaction(transaction)
-            except UnknownStockException, e:
-                logging.error(e)
+            except UnknownStockException as e:
+                logging.debug(e)
         self.con.commit()
                 
     def save_transaction(self, transaction):
@@ -180,15 +181,15 @@ class Database():
         logging.debug(transactions)
         try:
             cur.executemany(sql, transactions)
-            logging.info("Transaction %s saved" % (transactions))
-        except lite.IntegrityError, e:
-            logging.error(e)
-            logging.error(transactions)
+            logging.debug("Transaction %s saved" % transactions)
+        except lite.IntegrityError as e:
+            logging.debug(e)
+            logging.debug(transactions)
 
     def _get_stock_key_from_description(self, stock_desc):
         if not stock_desc:
             return None
-        sql = 'SELECT stock FROM stock_identifier WHERE identifier = "%s"' % (stock_desc)
+        sql = 'SELECT stock FROM stock_identifier WHERE identifier = "%s"' % stock_desc
         logging.debug(sql)
         cur = self.con.cursor()
         cur.execute(sql)
@@ -199,7 +200,7 @@ class Database():
         return str(stock_key[0])
 
     def _get_split_ratio(self, stock_key):
-        sql = "SELECT ratio FROM split_ratio WHERE stock = '%s'" % (stock_key)
+        sql = "SELECT ratio FROM split_ratio WHERE stock = '%s'" % stock_key
         cur = self.con.cursor()
         cur.execute(sql)
         ratio = cur.fetchone()
@@ -273,13 +274,13 @@ class Database():
         # type: (object, object, object) -> object
         logging.debug(query)
         cur = self.con.cursor()
-        cur.execute(query, args)
+        cur.execute(str(query), args)
         r = [OrderedDict((cur.description[i][0], value) \
                   for i, value in enumerate(row)) for row in cur.fetchall()]
         return (r[0] if r else None) if one else r
 
-
-    def dict_factory(self, cursor, row):
+    @staticmethod
+    def dict_factory(cursor, row):
         d = {}
         for idx, col in enumerate(cursor.description):
             d[col[0]] = row[idx]

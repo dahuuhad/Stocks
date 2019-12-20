@@ -13,8 +13,6 @@ class Parser(object):
         if date == "Datum" or account == "Konto" or "Paulina" in account:
             logging.debug(account)
             return None
-        transaction_type = transaction_type.decode('utf-8')
-        description = description.decode('utf-8')
         logging.debug((date, account, transaction_type, description, units, price, amount, fee, currency))
         units = self.num(units)
         price = self.num(price)
@@ -49,7 +47,7 @@ class Parser(object):
             return Withdrawal(date, amount)
         elif transaction_type == u"Utländsk källskatt 15%":
             return Tax(date, amount)
-        logging.error("Unknown transaction %s" % (
+        logging.debug("Unknown transaction %s" % (
         [date, account, transaction_type, description, units, price, amount, fee, currency]))
         return None
 

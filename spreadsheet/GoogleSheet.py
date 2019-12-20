@@ -68,11 +68,8 @@ class GoogleSheet():
     def write_summary(self, sheet_name, transactions):
         start_row = 2
         start_col = 'A'
-        start_row = 2
-        start_col = 'A'
         rangeName = '%s!%s%s' % (sheet_name, start_col, start_row)
         values = []
-        row = start_row
         for transaction in reversed(transactions):
             l = []
             l.append("=now()")
@@ -80,8 +77,6 @@ class GoogleSheet():
         body = {
             'values': values
         }
-        result = self.service.spreadsheets().values().update(spreadsheetId=self.sheetId, range=rangeName,
-                                                             valueInputOption=self.value_input_option, body=body).execute()
 
     def write_transactions(self, sheet_name, transactions):
         start_row = 2
@@ -98,8 +93,6 @@ class GoogleSheet():
         body = {
             'values': values
         }
-        result = self.service.spreadsheets().values().update(spreadsheetId=self.sheetId, range=rangeName,
-                                                             valueInputOption=self.value_input_option, body=body).execute()
 
     def insert_summary_row(self, start_row, end_row, summary_row_index):
         summary_row = []
@@ -149,9 +142,6 @@ class GoogleSheet():
         body = {
             'values': values
         }
-        result = self.service.spreadsheets().values().update(spreadsheetId=self.sheetId, range=rangeName,
-                                                             valueInputOption=self.value_input_option, body=body).execute()
-
 
     def stock_to_row(self, stock, row, summary_row, start_date=None, end_date=None):
         l = []
@@ -249,7 +239,5 @@ class GoogleSheet():
         }
         rangeName = 'Innehav!A20:E'
         value_input_option = 'USER_ENTERED'
-        result = self.service.spreadsheets().values().update(spreadsheetId=self.sheetId, range=rangeName,
-                                                        valueInputOption=value_input_option, body=body).execute()
 
 

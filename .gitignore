@@ -87,3 +87,11 @@ ENV/
 
 # Rope project settings
 .ropeproject
+.DS_Store
+.idea/.gitignore
+.idea/Stocks2.iml
+.idea/dbnavigator.xml
+.idea/inspectionProfiles/
+.idea/misc.xml
+.idea/modules.xml
+data/stocks.db

@@ -23,7 +23,8 @@ parser = argparse.ArgumentParser("Read stock information from Avanza and create 
 def setup_logging(level, logfile):
     format_str = '%(asctime)s %(levelname)s %(module)s::%(funcName)s (%(lineno)d) - %(message)s'
     formatter = logging.Formatter(format_str)
-    logging.basicConfig( format=format_str, level=level, filename=logfile, filemode='w')
+    logging.basicConfig(format=format_str, level=level, filename=logfile, filemode='w')
+    logging.getLogger('googleapicliet.discovery_cache').setLevel(logging.ERROR)
     root = logging.getLogger()
     ch = logging.StreamHandler(sys.stdout)
     ch.setFormatter(formatter)
@@ -34,6 +35,7 @@ def setup_logging(level, logfile):
 def compare_files(file1, file2):
     import filecmp
     return filecmp.cmp(file1, file2)
+
 
 json_path = os.path.join(os.sep, "Users", "daniel", "Documents", "Aktier", "JSON")
 root_path = os.path.join(os.sep, "Users", "daniel", "Documents", "Aktier")
@@ -82,10 +84,12 @@ def parse_args():
 
     read_args = parser.add_argument_group("Read transactions from Avanza CSV export")
     write_args = parser.add_argument_group("Write transactions to Google Sheet")
-    write_args.add_argument("--sheet_id", default="1B3ih0RL4zQ_4xV5yO28GDWQSjZRr8TVBYtVm4HGKPA0", help="Google Sheet Id")
+    write_args.add_argument("--sheet_id", default="1B3ih0RL4zQ_4xV5yO28GDWQSjZRr8TVBYtVm4HGKPA0",
+                            help="Google Sheet Id")
     database_args = parser.add_argument_group("Database")
     database_args.add_argument("--database_path", default=os.path.join('data', 'stocks.db'), help="Path to sqlite db")
-    database_args.add_argument("--data_structures", default=os.path.join('data', 'structures.sql'), help="Database structures")
+    database_args.add_argument("--data_structures", default=os.path.join('data', 'structures.sql'),
+                               help="Database structures")
     database_args.add_argument("--initial_data", default=os.path.join('data', 'initial_data.sql'), help="Initial data")
     database_args.add_argument("--setup_database", action="store_true")
 
@@ -121,14 +125,12 @@ def main():
         transactions = db.get_transactions(transaction_type=None)
         sheet.write_summary("Summary", transactions)
 
-
     if args.write_sheet:
         dividends = db.get_transactions(transaction_type=["Dividend"])
         sheet.write_transactions("Utdelningar", dividends)
 
         transactions = db.get_transactions(transaction_type=["Deposit", "Withdrawal"])
         sheet.write_transactions("Transaktioner", transactions)
-
 
         today = datetime.now()
         start_date = datetime(today.year, 1, 1).strftime("%Y-%m-%d")
@@ -144,14 +146,14 @@ def main():
         #      stocks = db.get_all_stocks(start_date=None, end_date=end_date, in_portfolio=True)
         #      sheet.write_stock_summary("%s" % year, stocks, start_date, end_date)
 
-        #stocks = db.get_all_stocks(in_portfolio=False)
-        #sheet.write_stock_summary("Old Portfolio", stocks)
+        # stocks = db.get_all_stocks(in_portfolio=False)
+        # sheet.write_stock_summary("Old Portfolio", stocks)
 
 
-def _get_fund_price(id):
+def _get_fund_price(fund_id):
     import requests
     from bs4 import BeautifulSoup
-    response = requests.get("https://www.affarsvarlden.se/bors/fonder/funds-details/%s/funds/" % (id))
+    response = requests.get("https://www.affarsvarlden.se/bors/fonder/funds-details/%s/funds/" % (fund_id))
     print(response.url)
     soup = BeautifulSoup(response.text, 'html.parser')
     for table in soup.find("table", class_="table afv-table-body"):
@@ -159,6 +161,7 @@ def _get_fund_price(id):
             if len(tr) == 0:
                 continue
             return tr.find_all("span", class_="is-positive")[-1].get_text(strip=True)
+
 
 if __name__ == "__main__":
     main()
