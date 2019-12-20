@@ -4,9 +4,9 @@ __author__ = 'daniel'
 
 import json
 import logging
+
 import requests
 from googlefinance import getQuotes
-from yahoo_finance import Share, Currency
 
 
 class FinanceService(object):
@@ -66,11 +66,9 @@ class FinanceService(object):
 
     def get_bloomberg_quote(self, bloomberg_symbol):
         url = "https://www.bloomberg.com/markets/chart/data/1D/%s" % bloomberg_symbol
-        print url
         headers = {'User-Agent':'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36'}
 
         response = requests.get(url, headers=headers)
-        print response.text
         data = json.loads(response.text)
         return data["data_values"][-1][-1]
 
@@ -90,7 +88,6 @@ class GoogleFinance(FinanceService):
         if currency == "SEK":
             return "1.0"
         try:
-            print json.dumps(getQuotes("CURRENCY:"+currency+"SEK"), indent=2)
             price = getQuotes(currency)[0].get('LastTradePrice')
         except Exception:
             price = "--"
