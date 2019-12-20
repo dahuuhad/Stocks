@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 __author__ = 'daniel'
 
-import os
 import csv
 import logging
+import os
 
-from Transaction import Dividend
 from Stock import Stock
+from Transaction import Dividend
 from parser.Parser import AvanzaTransactionParser
 
 
@@ -57,7 +57,6 @@ class CvsDataSource(DataSource):
         file_name, extension = os.path.splitext(file_path)
         return extension == ".csv"
 
-
     def _read_transactions(self):
         transaction_parser = AvanzaTransactionParser()
         for file_name in os.listdir(self.transaction_path):
@@ -69,7 +68,3 @@ class CvsDataSource(DataSource):
                         transaction = transaction_parser.parse_row(*row)
                         if transaction is not None:
                             self.add_transaction(transaction)
-
-
-
-

@@ -50,7 +50,6 @@ class Database:
         cur.execute(sql % ("UniqueColumnCheckNullUpdate", "UPDATE"))
         self.con.commit()
 
-
     def _read_and_execute_sql_from_file(self, sql_file_path):
         logging.debug("Reading sql commands from %s" % sql_file_path)
         f = open(sql_file_path, 'r')
@@ -122,8 +121,6 @@ class Database:
             if len(exchange) == 3:
                 yahoo += "." + exchange[:2]
             bloomberg = row[6]
-            #if signature == 'KOP':
-            #    bloomberg = "KOBRMTFB:SS"
             currency = row[3]
             dividend_per_year = row[4]
             dividend_forecast = row[5]
@@ -168,16 +165,18 @@ class Database:
             except UnknownStockException as e:
                 logging.debug(e)
         self.con.commit()
-                
+
     def save_transaction(self, transaction):
         logging.debug("Save transaction (%s)" % transaction)
         stock_key = self._get_stock_key_from_description(transaction.stock)
         split_ratio = 1.0
         if transaction.str_type == "Split":
             split_ratio = self._get_split_ratio(stock_key)
-        sql = "INSERT INTO transactions (trans_date, trans_type, stock, units, price, fees, split_ratio) VALUES (?, ?, ?, ?, ?, ?, ?)"
+        sql = "INSERT INTO transactions (trans_date, trans_type, stock, units, price, fees, split_ratio) " \
+              "VALUES (?, ?, ?, ?, ?, ?, ?)"
         cur = self.con.cursor()
-        transactions = ((transaction.date.strftime("%Y-%m-%d %H:%M:%S"), transaction.str_type, stock_key, transaction.units, transaction.price, transaction.amount, split_ratio),)
+        transactions = ((transaction.date.strftime("%Y-%m-%d %H:%M:%S"), transaction.str_type, stock_key,
+                         transaction.units, transaction.price, transaction.amount, split_ratio),)
         logging.debug(transactions)
         try:
             cur.executemany(sql, transactions)
@@ -223,7 +222,6 @@ class Database:
                 json_row["@timestamp"] = json_row['trans_date'].replace(" ", "T")+"Z"
                 json.dump(json_row, file)
                 file.write('\n')
-                #json.dump(json_row, file)
 
     def get_transactions(self, stock=None, transaction_type=None, start_date=None, end_date=None, return_json=False):
         sql = "SELECT trans_date, trans_type, stock, name, units, price, fees, split_ratio FROM transactions"
@@ -250,12 +248,14 @@ class Database:
         transactions = []
         for trans in result:
             if trans.get('trans_type') == "Sell":
-                transactions.append(Sell(trans.get('stock'), trans.get('trans_date'), trans.get('price'), trans.get('units'), trans.get('fees')))
+                transactions.append(Sell(trans.get('stock'), trans.get('trans_date'), trans.get('price'),
+                                         trans.get('units'), trans.get('fees')))
             elif trans.get('trans_type') in ('Buy', 'Transfer'):
-                transactions.append(Buy(trans.get('stock'), trans.get('trans_date'), trans.get('price'), trans.get('units'),
-                                  trans.get('fees')))
+                transactions.append(Buy(trans.get('stock'), trans.get('trans_date'), trans.get('price'),
+                                        trans.get('units'), trans.get('fees')))
             elif trans.get('trans_type') == "Dividend":
-                transactions.append(Dividend(trans.get('name'), trans.get('trans_date'), trans.get('price'), trans.get('units')))
+                transactions.append(Dividend(trans.get('name'), trans.get('trans_date'), trans.get('price'),
+                                             trans.get('units')))
             elif trans.get('trans_type') == "Split":
                 transactions.append(Split(trans.get('stock'), trans.get('trans_date'), trans.get('split_ratio')))
             elif trans.get('trans_type') == "Withdrawal":
@@ -275,8 +275,7 @@ class Database:
         logging.debug(query)
         cur = self.con.cursor()
         cur.execute(str(query), args)
-        r = [OrderedDict((cur.description[i][0], value) \
-                  for i, value in enumerate(row)) for row in cur.fetchall()]
+        r = [OrderedDict((cur.description[i][0], value) for i, value in enumerate(row)) for row in cur.fetchall()]
         return (r[0] if r else None) if one else r
 
     @staticmethod

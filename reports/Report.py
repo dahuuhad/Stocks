@@ -8,7 +8,6 @@ from Stock import Stock
 from Transaction import Dividend, Buy, Sell, Transfer, Split
 
 
-
 class Report(object):
     def __init__(self, report_path=None):
         self._report_path = report_path
@@ -37,7 +36,6 @@ class Report(object):
         :rtype : object
         """
         with open(os.path.join(self._report_path, file_name), 'w') as my_file:
-            #print text
             print("Write to %s" % my_file.name)
             my_file.write(text.encode("latin1"))
             my_file.close()
@@ -56,8 +54,8 @@ class CSVReport(Report):
     def generate_transaction_history(self, file_name, transactions):
         pass
 
-class PlainReport(Report):
 
+class PlainReport(Report):
 
     def setup(self):
         raise NotImplementedError

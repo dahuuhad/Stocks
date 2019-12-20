@@ -14,7 +14,6 @@ class FinanceService(object):
         self.base_url = ""
         self.base_currency = "SEK"
 
-
     def get_stock_price(self, google_symbol, yahoo_symbol, bloomberg_symbol=None):
         if bloomberg_symbol:
             try:
@@ -36,9 +35,10 @@ class FinanceService(object):
 
     def get_bloomberg_quote(self, bloomberg_symbol):
         url = "https://www.bloomberg.com/markets/chart/data/1D/%s" % bloomberg_symbol
-        headers = {'User-Agent':'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36'}
+        value = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_0) AppleWebKit/537.36 (KHTML, like Gecko) \
+        Chrome/69.0.3497.100 Safari/537.36'
+        headers = {'User-Agent': value}
 
         response = requests.get(url, headers=headers)
         data = json.loads(response.text)
         return data["data_values"][-1][-1]
-

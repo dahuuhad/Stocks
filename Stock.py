@@ -43,7 +43,6 @@ class Stock(object):
 
     def _get_fund_price(self, id):
         response = requests.get("https://www.affarsvarlden.se/bors/fonder/funds-details/%s/funds/" % (id))
-        print(response.url)
         soup = BeautifulSoup(response.text, 'html.parser')
         for table in soup.find("table", class_="table afv-table-body"):
             for tr in table.find_all("tr", class_=""):
