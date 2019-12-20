@@ -38,7 +38,7 @@ class Report(object):
         """
         with open(os.path.join(self._report_path, file_name), 'w') as my_file:
             #print text
-            print "Write to %s" % my_file.name
+            print("Write to %s" % my_file.name)
             my_file.write(text.encode("latin1"))
             my_file.close()
 
