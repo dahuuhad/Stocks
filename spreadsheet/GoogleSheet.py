@@ -71,9 +71,9 @@ class GoogleSheet():
         rangeName = '%s!%s%s' % (sheet_name, start_col, start_row)
         values = []
         for transaction in reversed(transactions):
-            l = []
-            l.append("=now()")
-            values.append(l)
+            transaction_list = []
+            transaction_list.append("=now()")
+            values.append(transaction_list)
         body = {
             'values': values
         }
@@ -144,68 +144,69 @@ class GoogleSheet():
         }
 
     def stock_to_row(self, stock, row, summary_row, start_date=None, end_date=None):
-        l = []
-        l.append('=HYPERLINK("%s"; "%s")' % (stock.avanza_url, stock.name)) ## A
-        l.append('=E%s*F%s' % (row, row)) ## B
-        l.append('=B%s-H%s' % (row, row)) ## C
-        l.append('=IF(H%s=0;B%s/100;C%s/H%s)' % (row, row, row, row)) ## D
-##        l.append('=%s*J%s' % (self._float_to_str(stock.get_price(start_date, end_date)), row)) ## E
-        l.append('=%s*J%s' % (stock.avanza_price, row)) ## E
-        l.append('%s' % self._float_to_str(stock.total_units)) ## F
-        l.append('%s' % self._float_to_str(stock.get_total_price())) ## G
-        l.append('=G%s*F%s' % (row, row)) ## H
-        l.append('=B%s/B%s' % (row, summary_row)) ## I
+        stock_list = []
+        stock_list.append('=HYPERLINK("%s"; "%s")' % (stock.avanza_url, stock.name))  ## A
+        stock_list.append('=E%s*F%s' % (row, row))  ## B
+        stock_list.append('=B%s-H%s' % (row, row))  ## C
+        stock_list.append('=IF(H%s=0;B%s/100;C%s/H%s)' % (row, row, row, row))  ## D
+        ##        stock_list.append('=%s*J%s' % (self._float_to_str(stock.get_price(start_date, end_date)), row)) ## E
+        stock_list.append('=%s*J%s' % (stock.avanza_price, row))  ## E
+        stock_list.append('%s' % self._float_to_str(stock.total_units))  ## F
+        stock_list.append('%s' % self._float_to_str(stock.get_total_price()))  ## G
+        stock_list.append('=G%s*F%s' % (row, row))  ## H
+        stock_list.append('=B%s/B%s' % (row, summary_row))  ## I
         # J = Currency
         if stock.currency == "SEK":
-            l.append(1)
+            stock_list.append(1)
         else:
-            l.append('=GoogleFinance("CURRENCY:%sSEK")' % str(stock.currency))
+            stock_list.append('=GoogleFinance("CURRENCY:%sSEK")' % str(stock.currency))
         # K = Utdelning/Aktie
-        l.append('=J%s*%s*T%s' % (row, self._float_to_str(stock.get_dividend_forecast()), row))
+        stock_list.append('=J%s*%s*T%s' % (row, self._float_to_str(stock.get_dividend_forecast()), row))
         # L = Arets utdelning
         if start_date and end_date:
-            l.append('=%s' % (self._float_to_str(stock.get_total_dividends(start_date, end_date))))
+            stock_list.append('=%s' % (self._float_to_str(stock.get_total_dividends(start_date, end_date))))
         else:
-            l.append('=%s' % (self._float_to_str(stock.get_total_dividends(datetime(datetime.today().year, 1, 1).date(),
-                                                                           datetime(datetime.today().year, 12, 31).date()))))
+            stock_list.append('=%s' % (self._float_to_str(
+                stock.get_total_dividends(datetime(datetime.today().year, 1, 1).date(),
+                                          datetime(datetime.today().year, 12, 31).date()))))
 
         # M = Utdelningsprognos
-        l.append('=F%s*K%s' % (row, row))
-        l.append('=IF(G14=0;0; K%s/G%s)' % (row, row))
-        l.append('=K%s/E%s' % (row, row))
-        l.append('%s' % self._float_to_str(stock.get_total_dividends()))
-        l.append('%s' % self._float_to_str(stock.realized_gain))
-        l.append('=P%s+Q%s' % (row, row))
-        l.append('=IF(H%s=0;B%s/100;R%s/H%s)' % (row, row, row, row))
-        l.append('%s' % self._float_to_str(stock.dividend_per_year))
+        stock_list.append('=F%s*K%s' % (row, row))
+        stock_list.append('=IF(G14=0;0; K%s/G%s)' % (row, row))
+        stock_list.append('=K%s/E%s' % (row, row))
+        stock_list.append('%s' % self._float_to_str(stock.get_total_dividends()))
+        stock_list.append('%s' % self._float_to_str(stock.realized_gain))
+        stock_list.append('=P%s+Q%s' % (row, row))
+        stock_list.append('=IF(H%s=0;B%s/100;R%s/H%s)' % (row, row, row, row))
+        stock_list.append('%s' % self._float_to_str(stock.dividend_per_year))
 
-        return l
+        return stock_list
 
     def db_dividend_to_sheet(self, transaction, row):
-        l = []
-        l.append(str(transaction.date))
-        l.append(str(type(transaction).__name__))
-        l.append(str(transaction.stock.encode("utf8")))
-        l.append(self._float_to_str(transaction.units))
-        l.append(self._float_to_str(transaction.price))
-        l.append("=D%s*E%s" % (row, row))
-        l.append("=YEAR(A%s)" % row)
-        l.append("=MONTH(A%s)" % row)
-        l.append('=text(N(H%s)&"-1";"MMMM")' % row)
+        dividend_list = []
+        dividend_list.append(str(transaction.date))
+        dividend_list.append(str(type(transaction).__name__))
+        dividend_list.append(str(transaction.stock.encode("utf8")))
+        dividend_list.append(self._float_to_str(transaction.units))
+        dividend_list.append(self._float_to_str(transaction.price))
+        dividend_list.append("=D%s*E%s" % (row, row))
+        dividend_list.append("=YEAR(A%s)" % row)
+        dividend_list.append("=MONTH(A%s)" % row)
+        dividend_list.append('=text(N(H%s)&"-1";"MMMM")' % row)
 
-        return l
+        return dividend_list
 
     def db_transaction_to_sheet(self, transaction, row):
-        l = []
+        transaction_list = []
 
-        l.append(str(transaction.date))
-        l.append(str(type(transaction).__name__))
-        l.append(self._float_to_str(transaction.amount))
-        l.append("=YEAR(A%s)" % row)
-        l.append("=MONTH(A%s)" % row)
-        l.append('=text(N(E%s)&"-1";"MMMM")' % row)
+        transaction_list.append(str(transaction.date))
+        transaction_list.append(str(type(transaction).__name__))
+        transaction_list.append(self._float_to_str(transaction.amount))
+        transaction_list.append("=YEAR(A%s)" % row)
+        transaction_list.append("=MONTH(A%s)" % row)
+        transaction_list.append('=text(N(E%s)&"-1";"MMMM")' % row)
 
-        return l
+        return transaction_list
 
     def _float_to_str(self, f):
 

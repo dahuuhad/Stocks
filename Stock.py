@@ -9,16 +9,17 @@ from data.FinanceService import FinanceService
 
 
 class Stock(object):
-    def __init__(self, key, name, google_quote, yahoo_quote, currency, kind = "Aktie", descriptions = [],
-                 dividend_per_year=1, dividend_forecast=0.0, bloomberg_quote=None, avanza_id=None, avanza_name=None, is_stock=True):
+    def __init__(self, key, name, google_quote, yahoo_quote, currency, kind="Aktie", descriptions=[],
+                 dividend_per_year=1, dividend_forecast=0.0, bloomberg_quote=None, avanza_id=None,
+                 avanza_name=None, is_stock=True):
         self.key = key
         self.name = name
         self.google_quote = str(google_quote)
         self.yahoo_quote = str(yahoo_quote)
         self.currency = currency
         self.finance_service = FinanceService()
-        #self.google_finance = GoogleFinance()
-        #self.yahoo_finance = YahooFinance()
+        # self.google_finance = GoogleFinance()
+        # self.yahoo_finance = YahooFinance()
         self.bloomberg_finance = bloomberg_quote
         self.transactions = []
         self.kind = kind
@@ -35,7 +36,7 @@ class Stock(object):
             self.avanza_price = self._get_fund_price(self.bloomberg_finance)
 
         self.total_amount = 0
-        self.total_units  = 0
+        self.total_units = 0
         self.total_dividends = 0
         self.realized_gain = 0
         self.prices = dict()
@@ -53,7 +54,7 @@ class Stock(object):
     def get_total_price(self):
         if self.total_units == 0:
             return 0
-        return self.total_amount/self.total_units
+        return self.total_amount / self.total_units
 
     def add_price(self, date, price):
         self.prices[date] = price
@@ -65,7 +66,8 @@ class Stock(object):
         return description in self.descriptions or self.key == description
 
     def gain_of_transaction(self, transaction):
-        return (-1*(transaction.amount/transaction.units)-(self.total_amount/self.total_units))*transaction.units*-1
+        return (-1 * (transaction.amount / transaction.units) - (
+                self.total_amount / self.total_units)) * transaction.units * -1
 
     def add_transaction(self, transaction):
         add_transaction = True
@@ -77,18 +79,20 @@ class Stock(object):
                 logging.debug("%s" % ([self.name, self.total_amount, transaction.amount]))
                 self.total_units = self.total_units * transaction.units
         elif isinstance(transaction, Dividend):
-            self.total_dividends += transaction.units*transaction.price
+            self.total_dividends += transaction.units * transaction.price
         elif isinstance(transaction, Buy):
             self.total_units += transaction.units
             self.total_amount -= transaction.amount
-            logging.debug("%s" % ([self.name, transaction.str_type, self.total_amount, transaction.amount, self.total_units, transaction.units]))
+            logging.debug("%s" % ([self.name, transaction.str_type, self.total_amount, transaction.amount,
+                                   self.total_units, transaction.units]))
 
         elif isinstance(transaction, Sell):
             logging.debug(transaction)
             self.realized_gain += self.gain_of_transaction(transaction)
             self.total_units += transaction.units
             self.total_amount -= transaction.amount
-            logging.debug("%s" % ([self.name, transaction.str_type, self.total_amount, transaction.amount, self.total_units, transaction.units, self.realized_gain]))
+            logging.debug("%s" % ([self.name, transaction.str_type, self.total_amount, transaction.amount,
+                                   self.total_units, transaction.units, self.realized_gain]))
 
         if add_transaction:
             if self.total_units == 0:
@@ -108,7 +112,6 @@ class Stock(object):
                 dividend += trans.price
         return dividend
 
-
     def get_total_dividends(self, start_date=None, end_date=None):
         if not start_date and not end_date:
             return self.total_dividends
@@ -121,7 +124,7 @@ class Stock(object):
 
     def calculate_transaction_average(self, transaction):
         if False and self.currency == "SEK":
-            return transaction.units*transaction.price+transaction.fee
+            return transaction.units * transaction.price + transaction.fee
         else:
             return transaction.amount
 
@@ -133,9 +136,7 @@ class Stock(object):
         stock_price = self.finance_service.get_stock_price(self.google_quote, self.yahoo_quote, self.bloomberg_finance)
         currency_price = self.finance_service.get_currency_price(self.currency)
 
-        #google_price =  self.google_finance.get_stock_price(self.google_quote)
-        #google_currency = "--" #self.google_finance.get_currency_price(self.currency)
-        #yahoo_price = self.yahoo_finance.get_stock_price(self.yahoo_quote)
+        # google_price =  self.google_finance.get_stock_price(self.google_quote)
+        # google_currency = "--" #self.google_finance.get_currency_price(self.currency)
+        # yahoo_price = self.yahoo_finance.get_stock_price(self.yahoo_quote)
         return [self.name, stock_price, self.currency, currency_price]
-
-
