@@ -3,25 +3,24 @@ __author__ = 'daniel'
 
 from datetime import datetime
 
+
+def _string_to_date(date_str):
+    try:
+        return datetime.strptime(date_str, '%Y-%m-%d').date()
+    except ValueError:
+        return datetime.strptime(date_str, '%Y-%m-%d %H:%M:%S').date()
+
 class Transaction(object):
     def __init__(self, type, stock, date):
         self.stock = stock
-        self.date = self._string_to_date(date)
+        self.date = _string_to_date(date)
         self.units = 0.0
         self.price = 0.0
         self.amount = 0.0
         self.str_type = type
 
-
     def __str__(self):
-        return "Type=%s, Date=%s, Stock=%s" % (self.str_type, self.date, self.stock )
-
-    def _string_to_date(self, date_str):
-        try:
-            return datetime.strptime(date_str, '%Y-%m-%d').date()
-        except ValueError:
-            return datetime.strptime(date_str, '%Y-%m-%d %H:%M:%S').date()
-        return None
+        return "Type=%s, Date=%s, Stock=%s" % (self.str_type, self.date, self.stock)
 
     @classmethod
     def to_table_header(cls):
@@ -32,6 +31,7 @@ class Transaction(object):
 
     def to_csv(self):
         return ",".join(self.to_table())
+
 
 class Transfer(Transaction):
     def __init__(self, stock, date, units):
@@ -55,7 +55,7 @@ class Dividend(Transaction):
         super(Dividend, self).__init__("Dividend", stock, date)
         self.units = units
         self.price = price
-        self.amount = self.units*self.price
+        self.amount = self.units * self.price
 
     def __str__(self):
         return "%s, %s, %s" % (super(Dividend, self).__str__(), self.units, self.price)
@@ -72,8 +72,9 @@ class Dividend(Transaction):
         data_table = super(Dividend, self).to_table()
         data_table.append(self.price)
         data_table.append(self.units)
-        data_table.append(self.price*self.units)
+        data_table.append(self.price * self.units)
         return data_table
+
 
 class Buy(Transaction):
     def __init__(self, stock, date, price, units, amount):
@@ -84,7 +85,6 @@ class Buy(Transaction):
 
     def __str__(self):
         return "%s, %s, %s, %s" % (super(Buy, self).__str__(), self.units, self.price, self.amount)
-
 
     @classmethod
     def to_table_header(cls):
@@ -100,6 +100,7 @@ class Buy(Transaction):
         data_table.append(self.units)
         data_table.append(self.amount)
         return data_table
+
 
 class Sell(Transaction):
     def __init__(self, stock, date, price, units, amount):
@@ -137,6 +138,7 @@ class Deposit(Transaction):
     def __str__(self):
         return "%s, %s" % (super(Deposit, self).__str__(), self.amount)
 
+
 class Withdrawal(Transaction):
     def __init__(self, date, amount):
         super(Withdrawal, self).__init__("Withdrawal", None, date)
@@ -144,6 +146,7 @@ class Withdrawal(Transaction):
 
     def __str__(self):
         return "%s, %s" % (super(Withdrawal, self).__str__(), self.amount)
+
 
 class Tax(Transaction):
     def __init__(self, date, amount):

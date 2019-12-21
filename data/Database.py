@@ -215,11 +215,11 @@ class Database:
             self.table_to_json(json_path, table)
 
     def table_to_json(self, json_path, table):
-        with open(os.path.join(json_path, table+".json"), 'w') as file:
+        with open(os.path.join(json_path, table + ".json"), 'w') as file:
             data = self.get_transactions(return_json=True)
 
             for json_row in data:
-                json_row["@timestamp"] = json_row['trans_date'].replace(" ", "T")+"Z"
+                json_row["@timestamp"] = json_row['trans_date'].replace(" ", "T") + "Z"
                 json.dump(json_row, file)
                 file.write('\n')
 

@@ -9,6 +9,17 @@ import requests
 from googlefinance import getQuotes
 
 
+def get_bloomberg_quote(bloomberg_symbol):
+    url = "https://www.bloomberg.com/markets/chart/data/1D/%s" % bloomberg_symbol
+    value = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_0) AppleWebKit/537.36 (KHTML, like Gecko) \
+    Chrome/69.0.3497.100 Safari/537.36'
+    headers = {'User-Agent': value}
+
+    response = requests.get(url, headers=headers)
+    data = json.loads(response.text)
+    return data["data_values"][-1][-1]
+
+
 class FinanceService(object):
     def __init__(self):
         self.base_url = ""
@@ -18,7 +29,7 @@ class FinanceService(object):
         if bloomberg_symbol:
             try:
                 logging.info("Getting quotes for %s" % bloomberg_symbol)
-                return self.get_bloomberg_quote(bloomberg_symbol=bloomberg_symbol)
+                return get_bloomberg_quote(bloomberg_symbol=bloomberg_symbol)
             except Exception:
                 logging.error("Bloomberg unknown symbol: %s" % bloomberg_symbol)
 
@@ -30,15 +41,8 @@ class FinanceService(object):
         except Exception:
             logging.debug("Google Finance unknown symbol: %s" % google_symbol)
 
-        logging.debug("No stock price found for symbol: %s" % (google_symbol))
+        logging.debug("No stock price found for symbol: %s" % google_symbol)
         return "--"
 
-    def get_bloomberg_quote(self, bloomberg_symbol):
-        url = "https://www.bloomberg.com/markets/chart/data/1D/%s" % bloomberg_symbol
-        value = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_0) AppleWebKit/537.36 (KHTML, like Gecko) \
-        Chrome/69.0.3497.100 Safari/537.36'
-        headers = {'User-Agent': value}
-
-        response = requests.get(url, headers=headers)
-        data = json.loads(response.text)
-        return data["data_values"][-1][-1]
+    def get_currency_price(self, currency):
+        pass

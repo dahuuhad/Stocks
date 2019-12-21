@@ -8,7 +8,7 @@ import sys
 
 from data.Database import Database
 from parser.Parser import AvanzaTransactionParser
-from spreadsheet.GoogleSheet import GoogleSheet
+from spreadsheet.GoogleSheet import GoogleSheet, write_summary
 
 try:
     from oauth2client import tools
@@ -123,7 +123,7 @@ def main():
 
     if args.write_summary:
         transactions = db.get_transactions(transaction_type=None)
-        sheet.write_summary("Summary", transactions)
+        write_summary("Summary", transactions)
 
     if args.write_sheet:
         dividends = db.get_transactions(transaction_type=["Dividend"])
@@ -153,7 +153,7 @@ def main():
 def _get_fund_price(fund_id):
     import requests
     from bs4 import BeautifulSoup
-    response = requests.get("https://www.affarsvarlden.se/bors/fonder/funds-details/%s/funds/" % (fund_id))
+    response = requests.get("https://www.affarsvarlden.se/bors/fonder/funds-details/%s/funds/" % fund_id)
     print(response.url)
     soup = BeautifulSoup(response.text, 'html.parser')
     for table in soup.find("table", class_="table afv-table-body"):

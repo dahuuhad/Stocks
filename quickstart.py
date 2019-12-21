@@ -1,7 +1,8 @@
 from __future__ import print_function
-import httplib2
+
 import os
 
+import httplib2
 from apiclient import discovery
 from oauth2client import client
 from oauth2client import tools
@@ -9,6 +10,7 @@ from oauth2client.file import Storage
 
 try:
     import argparse
+
     flags = argparse.ArgumentParser(parents=[tools.argparser]).parse_args()
 except ImportError:
     flags = None
@@ -43,10 +45,11 @@ def get_credentials():
         flow.user_agent = APPLICATION_NAME
         if flags:
             credentials = tools.run_flow(flow, store, flags)
-        else: # Needed only for compatibility with Python 2.6
+        else:  # Needed only for compatibility with Python 2.6
             credentials = tools.run(flow, store)
         print('Storing credentials to ' + credential_path)
     return credentials
+
 
 def main():
     """Shows basic usage of the Sheets API.
@@ -57,19 +60,18 @@ def main():
     """
     credentials = get_credentials()
     http = credentials.authorize(httplib2.Http())
-    discoveryUrl = ('https://sheets.googleapis.com/$discovery/rest?'
-                    'version=v4')
+    discovery_url = ('https://sheets.googleapis.com/$discovery/rest?'
+                     'version=v4')
     service = discovery.build('sheets', 'v4', http=http,
-                              discoveryServiceUrl=discoveryUrl)
+                              discoveryServiceUrl=discovery_url)
 
-    #spreadsheetId = '1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms'
-    spreadsheetId = '1B3ih0RL4zQ_4xV5yO28GDWQSjZRr8TVBYtVm4HGKPA0'
-    rangeName = 'Class Data!A2:E'
-    rangeName = 'Innehav!A2:E15'
+    # spreadsheet_id = '1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms'
+    spreadsheet_id = '1B3ih0RL4zQ_4xV5yO28GDWQSjZRr8TVBYtVm4HGKPA0'
+    range_name = 'Class Data!A2:E'
+    range_name = 'Innehav!A2:E15'
     result = service.spreadsheets().values().get(
-        spreadsheetId=spreadsheetId, range=rangeName).execute()
+        spreadsheetId=spreadsheet_id, range=range_name).execute()
     values = result.get('values', [])
-
 
     if not values:
         print('No data found.')
@@ -88,10 +90,10 @@ def main():
     body = {
         'values': values
     }
-    rangeName = 'Innehav!A20:E'
+    range_name = 'Innehav!A20:E'
     value_input_option = 'USER_ENTERED'
-    result = service.spreadsheets().values().update(spreadsheetId=spreadsheetId, range=rangeName,
-    valueInputOption=value_input_option, body=body).execute()
+    result = service.spreadsheets().values().update(spreadsheetId=spreadsheet_id, range=range_name,
+                                                    valueInputOption=value_input_option, body=body).execute()
 
 
 if __name__ == '__main__':

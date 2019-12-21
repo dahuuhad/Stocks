@@ -36,6 +36,11 @@ class DataSource(object):
             return transactions
 
 
+def _is_csv_file(file_path):
+    file_name, extension = os.path.splitext(file_path)
+    return extension == ".csv"
+
+
 class CvsDataSource(DataSource):
     def __init__(self, root_path="", transaction_path="transactions", stock_definition_file="Stocks.txt"):
         super(CvsDataSource, self).__init__()
@@ -53,14 +58,10 @@ class CvsDataSource(DataSource):
             for row in reader:
                 self.add_stock(Stock(*row))
 
-    def _is_csv_file(self, file_path):
-        file_name, extension = os.path.splitext(file_path)
-        return extension == ".csv"
-
     def _read_transactions(self):
         transaction_parser = AvanzaTransactionParser()
         for file_name in os.listdir(self.transaction_path):
-            if self._is_csv_file(os.path.join(self.transaction_path, file_name)):
+            if _is_csv_file(os.path.join(self.transaction_path, file_name)):
                 logging.info("Parsing %s" % file_name)
                 with open(os.path.join(self.transaction_path, file_name), 'r') as f:
                     reader = csv.reader(f, dialect='excel', delimiter=';')
