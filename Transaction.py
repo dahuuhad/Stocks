@@ -10,6 +10,7 @@ def _string_to_date(date_str):
     except ValueError:
         return datetime.strptime(date_str, '%Y-%m-%d %H:%M:%S').date()
 
+
 class Transaction(object):
     def __init__(self, type, stock, date):
         self.stock = stock
