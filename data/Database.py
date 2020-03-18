@@ -142,7 +142,7 @@ class Database:
                 stock.add_price(date=price[0], price=price[1])
             if in_portfolio and stock.total_units > 0:
                 stocks.append(stock)
-            elif not in_portfolio and stock.total_units == 0:
+            elif not in_portfolio:
                 stocks.append(stock)
         return stocks
 

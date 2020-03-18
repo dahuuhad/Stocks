@@ -59,7 +59,7 @@ class Parser(object):
             return Withdrawal(date, amount)
         elif transaction_type == u"Utländsk källskatt 15%":
             return Tax(date, amount)
-        logging.debug("Unknown transaction %s" % ([date, account, transaction_type, description,
+        logging.error("Unknown transaction %s" % ([date, account, transaction_type, description,
                                                    units, price, amount, fee, currency]))
         return None
 

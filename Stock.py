@@ -51,6 +51,8 @@ class Stock(object):
         self.total_units = 0
         self.total_dividends = 0
         self.realized_gain = 0
+        self.purchasing_sum = 0
+        self.sum_of_units = 0
         self.prices = dict()
 
     def get_total_price(self):
@@ -71,6 +73,7 @@ class Stock(object):
         return (-1 * (transaction.amount / transaction.units) - (
                 self.total_amount / self.total_units)) * transaction.units * -1
 
+
     def add_transaction(self, transaction):
         add_transaction = True
         if isinstance(transaction, Split):
@@ -85,6 +88,8 @@ class Stock(object):
         elif isinstance(transaction, Buy):
             self.total_units += transaction.units
             self.total_amount -= transaction.amount
+            self.purchasing_sum -= transaction.amount
+            self.sum_of_units += transaction.units
             logging.debug("%s" % ([self.name, transaction.str_type, self.total_amount, transaction.amount,
                                    self.total_units, transaction.units]))
 

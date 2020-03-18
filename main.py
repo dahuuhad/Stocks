@@ -140,6 +140,8 @@ def main():
         end_date = None
         sheet.write_stock_summary("Portfolio", stocks, start_date, end_date)
 
+        stocks = db.get_all_stocks(in_portfolio=False, start_date=start_date, end_date=end_date)
+        sheet.write_stock_history("Historik", stocks)
         # for year in range(2016,2017):
         #      end_date = datetime(year, 12, 31).strftime("%Y-%m-%d")
         #      start_date = datetime(year, 12, 24).strftime("%Y-%m-%d")
@@ -165,7 +167,7 @@ def _get_fund_price(fund_id):
 
 if __name__ == "__main__":
     main()
-    _get_fund_price(22464)
-    _get_fund_price(3904983)
+    # _get_fund_price(22464)
+    # _get_fund_price(3904983)
 
     sys.exit(0)
