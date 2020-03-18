@@ -53,6 +53,8 @@ class Stock(object):
         self.realized_gain = 0
         self.purchasing_sum = 0
         self.sum_of_units = 0
+        self.sold_units = 0
+        self.sold_sum = 0
         self.prices = dict()
 
     def get_total_price(self):
@@ -98,6 +100,8 @@ class Stock(object):
             self.realized_gain += self.gain_of_transaction(transaction)
             self.total_units += transaction.units
             self.total_amount -= transaction.amount
+            self.sold_units += transaction.units
+            self.sold_sum -= transaction.amount
             logging.debug("%s" % ([self.name, transaction.str_type, self.total_amount, transaction.amount,
                                    self.total_units, transaction.units, self.realized_gain]))
 

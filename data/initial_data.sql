@@ -69,7 +69,14 @@ insert OR REPLACE INTO stock_avanza (stock, stock_id, stock_name, is_stock) VALU
 ('SWED-A',  5241,   'swedbank-a',       1),
 ('TELIA',   5479,   'telia-company',    1),
 ('TIGO',    6048,   'millicom-int--cellular-sdb',    1),
-('ORES',    5302,   'oresund',          1);
+('ORES',    5302,   'oresund',          1),
+('MCD',     4375,   'mcdonalds-corp',   1),
+('FING-B',    5468,   'fingerprint-cards-b', 1),
+('AAPL',    3323,   'apple-inc',        1),
+('BON',     52498,  'bonheur',          1),
+('KO',      3803,   'coca-cola-co',     1),
+('DE',      4160,   'deere---co',       1),
+('ERIC-B',  5240,   'ericsson-b',        1);
 
 insert OR REPLACE INTO stock_bloomberg (stock, bloomberg_signature) VALUES
 ('KOP',     'KOBRMTFB:SS'),
