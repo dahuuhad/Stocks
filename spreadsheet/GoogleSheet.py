@@ -205,8 +205,8 @@ class GoogleSheet:
 
         stock_list.append('%s' % _float_to_str(stock.get_total_dividends()))
         stock_list.append('%s' % _float_to_str(stock.realized_gain))
-        stock_list.append('=F%s+G%s' % (row, row))
-        stock_list.append('=IF(H%s=0;0;IF(D%s=0;1,0;H%s/D%s))' % (row, row, row, row))
+        stock_list.append('=G%s+H%s' % (row, row))
+        stock_list.append('=IF(I%s=0;0;IF(E%s=0;1,0;I%s/E%s))' % (row, row, row, row))
 
         return stock_list
 
