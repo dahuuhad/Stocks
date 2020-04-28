@@ -8,7 +8,7 @@ from Stock import Stock
 from Transaction import Dividend, Buy, Sell, Transfer, Split
 
 
-class Report(object):
+class Report():
     def __init__(self, report_path=None):
         self._report_path = report_path
 
@@ -85,13 +85,13 @@ class PlainReport(Report):
 
         stock_header = ["Stock", "Total dividends"]
         summary_data = []
-        for key, value in stock_dividends.iteritems():
+        for key, value in stock_dividends.items():
             summary_data.append([key, int(value)])
         self._save_to_file("dividend_stock_summary.txt", tabulate(summary_data, stock_header))
 
         summary_header = ["Year", "Total dividends"]
         summary_data = []
-        for key, value in yearly_dividends.iteritems():
+        for key, value in yearly_dividends.items():
             summary_data.append([key, int(value)])
         self._save_to_file("dividend_year_summary.txt", tabulate(summary_data, summary_header))
 
@@ -102,11 +102,11 @@ class PlainReport(Report):
                 depot[transaction.stock] = depot.get(transaction.stock, 0) - transaction.units
             elif isinstance(transaction, Split):
                 pass
-            elif isinstance(transaction, Buy) or isinstance(transaction, Transfer):
+            elif isinstance(transaction, (Buy, Transfer)):
                 depot[transaction.stock] = depot.get(transaction.stock, 0) + transaction.units
         summary_header = ["Stock", "Units"]
         summary_data = []
-        for key, value in sorted(depot.iteritems()):
+        for key, value in sorted(depot.items()):
             if int(value) != 0:
                 summary_data.append([key, int(value)])
         self._save_to_file(file_name, tabulate(summary_data, summary_header))
@@ -120,7 +120,7 @@ class PlainReport(Report):
                 depot[transaction.stock] = depot.get(transaction.stock, 0) + transaction.units
         summary_header = ["Stock", "Units"]
         summary_data = []
-        for key, value in depot.iteritems():
+        for key, value in depot.items():
             summary_data.append([key, int(value)])
         self._save_to_file(file_name, tabulate(summary_data, summary_header))
 

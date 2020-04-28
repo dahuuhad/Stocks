@@ -2,9 +2,14 @@ __author__ = 'daniel'
 
 import argparse
 import csv
+import filecmp
 import logging
 import os
 import sys
+from datetime import datetime
+
+import requests
+from bs4 import BeautifulSoup
 
 from data.Database import Database
 from parser.Parser import AvanzaTransactionParser
@@ -14,7 +19,6 @@ try:
     from oauth2client import tools
 except ImportError:
     pass
-from datetime import datetime
 
 PARSER = argparse.ArgumentParser("Read stock information from Avanza and create a Google Sheet",
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter,
@@ -34,7 +38,6 @@ def setup_logging(level, logfile):
 
 
 def compare_files(file1, file2):
-    import filecmp
     return filecmp.cmp(file1, file2)
 
 
@@ -141,12 +144,14 @@ def main():
         today = datetime.now()
         start_date = datetime(today.year, 1, 1).strftime("%Y-%m-%d")
         end_date = datetime(today.year, today.month, today.day).strftime("%Y-%m-%d")
-        stocks = database.get_all_stocks(in_portfolio=True, start_date=start_date, end_date=end_date)
+        stocks = database.get_all_stocks(in_portfolio=True,
+                                         start_date=start_date, end_date=end_date)
         start_date = None
         end_date = None
         sheet.write_stock_summary("Portfolio", stocks, start_date, end_date)
 
-        stocks = database.get_all_stocks(in_portfolio=False, start_date=start_date, end_date=end_date)
+        stocks = database.get_all_stocks(in_portfolio=False,
+                                         start_date=start_date, end_date=end_date)
         sheet.write_stock_history("Historik", stocks)
         # for year in range(2016,2017):
         #      end_date = datetime(year, 12, 31).strftime("%Y-%m-%d")
@@ -159,8 +164,6 @@ def main():
 
 
 def _get_fund_price(fund_id):
-    import requests
-    from bs4 import BeautifulSoup
     response = requests.get(
         "https://www.affarsvarlden.se/bors/fonder/funds-details/%s/funds/" % fund_id)
     print(response.url)
