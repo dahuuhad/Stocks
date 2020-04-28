@@ -8,20 +8,21 @@ from Transaction import Buy, Sell, Split, Dividend
 from data.FinanceService import FinanceService
 
 
-def _get_fund_price(id):
-    response = requests.get("https://www.affarsvarlden.se/bors/fonder/funds-details/%s/funds/" % id)
+def _get_fund_price(name):
+    url = 'https://www.di.se/fonder/%s/' % name
+    response = requests.get(url)
+    if response.status_code != 200:
+        return ""
     soup = BeautifulSoup(response.text, 'html.parser')
-    for table in soup.find("table", class_="table afv-table-body"):
-        for tr in table.find_all("tr", class_=""):
-            if len(tr) == 0:
-                continue
-            return tr.find_all("span", class_="is-positive")[-1].get_text(strip=True)
+    return soup.find('span', class_='js_real-time-stock-details-price').getText(strip=True)
 
 
 class Stock(object):
-    def __init__(self, key, name, google_quote, yahoo_quote, currency, kind="Aktie", descriptions=None,
-                 dividend_per_year=1, dividend_forecast=0.0, bloomberg_quote=None, avanza_id=None,
-                 avanza_name=None, is_stock=True):
+    def __init__(self, key, name, google_quote, yahoo_quote,
+                 currency, kind="Aktie", descriptions=None,
+                 dividend_per_year=1, dividend_forecast=0.0,
+                 bloomberg_quote=None, avanza_id=None,
+                 avanza_name=None, is_stock=1):
         if descriptions is None:
             descriptions = []
         self.key = key
@@ -39,13 +40,21 @@ class Stock(object):
         self.dividend_per_year = dividend_per_year
         self.dividend_forecast_per_stock = dividend_forecast
 
-        if is_stock:
-            self.avanza_url = "https://www.avanza.se/aktier/om-aktien.html/%s/%s" % (avanza_id, avanza_name)
-            self.avanza_price = "IMPORTXML(\"%s\"; \"// span [@class='pushBox roundCorners3']\")" % self.avanza_url
-        else:
+        if is_stock == 1:
+            self.avanza_url = "https://www.avanza.se/aktier/om-aktien.html/%s/%s" % \
+                              (avanza_id, avanza_name)
+            self.avanza_price = "IMPORTXML(\"%s\"; \"// span [@class='pushBox roundCorners3']\")" % \
+                                self.avanza_url
+        elif is_stock == 0:
             logging.info(self.name)
-            self.avanza_url = "https://www.avanza.se/fonder/om-fonden.html/%s/%s" % (avanza_id, avanza_name)
+            self.avanza_url = "https://www.avanza.se/fonder/om-fonden.html/%s/%s" % \
+                              (avanza_id, avanza_name)
             self.avanza_price = _get_fund_price(self.bloomberg_finance)
+        elif is_stock == 2:
+            self.avanza_url = "https://www.avanza.se/borshandlade-produkter/etf-torg/om-fonden.html/%s/%s" % \
+                              (avanza_id, avanza_name)
+            self.avanza_price = "IMPORTXML(\"%s\"; \"// span [@class='pushBox roundCorners3']\")" % \
+                                self.avanza_url
 
         self.total_amount = 0
         self.total_units = 0
@@ -66,15 +75,15 @@ class Stock(object):
         self.prices[date] = price
 
     def get_price(self, start_date=None, end_date=None):
-        return self.finance_service.get_stock_price(self.google_quote, self.yahoo_quote, self.bloomberg_finance)
+        return self.finance_service.get_stock_price(self.google_quote,
+                                                    self.yahoo_quote, self.bloomberg_finance)
 
     def has_description(self, description):
         return description in self.descriptions or self.key == description
 
     def gain_of_transaction(self, transaction):
-        return (-1 * (transaction.amount / transaction.units) - (
-                self.total_amount / self.total_units)) * transaction.units * -1
-
+        return (-1 * (transaction.amount / transaction.units) -
+                (self.total_amount / self.total_units)) * transaction.units * -1
 
     def add_transaction(self, transaction):
         add_transaction = True
@@ -92,7 +101,8 @@ class Stock(object):
             self.total_amount -= transaction.amount
             self.purchasing_sum -= transaction.amount
             self.sum_of_units += transaction.units
-            logging.debug("%s" % ([self.name, transaction.str_type, self.total_amount, transaction.amount,
+            logging.debug("%s" % ([self.name, transaction.str_type, self.total_amount,
+                                   transaction.amount,
                                    self.total_units, transaction.units]))
 
         elif isinstance(transaction, Sell):
@@ -102,8 +112,9 @@ class Stock(object):
             self.total_amount -= transaction.amount
             self.sold_units += transaction.units
             self.sold_sum -= transaction.amount
-            logging.debug("%s" % ([self.name, transaction.str_type, self.total_amount, transaction.amount,
-                                   self.total_units, transaction.units, self.realized_gain]))
+            logging.debug("%s" % ([self.name, transaction.str_type, self.total_amount,
+                                   transaction.amount, self.total_units,
+                                   transaction.units, self.realized_gain]))
 
         if add_transaction:
             if self.total_units == 0:
@@ -144,7 +155,8 @@ class Stock(object):
         return ["Name", "Price", "Currency", "Currency price"]
 
     def to_table(self):
-        stock_price = self.finance_service.get_stock_price(self.google_quote, self.yahoo_quote, self.bloomberg_finance)
+        stock_price = self.finance_service.get_stock_price(self.google_quote,
+                                                           self.yahoo_quote, self.bloomberg_finance)
         currency_price = self.finance_service.get_currency_price(self.currency)
 
         # google_price =  self.google_finance.get_stock_price(self.google_quote)

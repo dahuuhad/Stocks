@@ -45,4 +45,4 @@ class FinanceService(object):
         return "--"
 
     def get_currency_price(self, currency):
-        pass
+        return 0
