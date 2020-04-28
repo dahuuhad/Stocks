@@ -11,11 +11,11 @@ from oauth2client.file import Storage
 try:
     import argparse
 
-    flags = tools.argparser.parse_args(args=[])
+    FLAGS = tools.argparser.parse_args(args=[])
 
     # flags = argparse.ArgumentParser(parents=[tools.argparser]).parse_args()
 except ImportError:
-    flags = None
+    FLAGS = None
 
 # If modifying these scopes, delete your previously saved credentials
 # at ~/.credentials/sheets.googleapis.com-python-quickstart.json
@@ -24,9 +24,9 @@ CLIENT_SECRET_FILE = 'client_secret.json'
 APPLICATION_NAME = 'Google Sheets API Python Quickstart'
 
 
-def _float_to_str(f):
-    float_str = str(f).replace(".", ",")
-    if f < 0.0:
+def _float_to_str(my_float):
+    float_str = str(my_float).replace(".", ",")
+    if my_float < 0.0:
         float_str = float_str
     return float_str
 
@@ -48,7 +48,8 @@ def insert_summary_row(start_row, end_row, summary_row_index):
         if c == 'A':
             summary_row.append('Totalt')
         elif c == 'D':
-            summary_row.append('=(B%s-H%s)/H%s' % (summary_row_index, summary_row_index, summary_row_index))
+            summary_row.append(
+                '=(B%s-H%s)/H%s' % (summary_row_index, summary_row_index, summary_row_index))
         elif c in summary_columns:
             summary_row.append('=SUM(%s%s:%s%s)' % (c, start_row, c, end_row))
         else:
@@ -102,7 +103,7 @@ def get_credentials():
 class GoogleSheet:
 
     def __init__(self, sheet_id):
-        self.sheetId = sheet_id
+        self.sheet_id = sheet_id
         credentials = get_credentials()
         http = credentials.authorize(httplib2.Http())
         discovery_url = ('https://sheets.googleapis.com/$discovery/rest?'
@@ -126,9 +127,11 @@ class GoogleSheet:
         body = {
             'values': values
             }
-        result = self.service.spreadsheets().values().update(spreadsheetId=self.sheetId, range=range_name,
-                                                             valueInputOption=self.value_input_option,
-                                                             body=body).execute()
+        result = self.service.spreadsheets(). \
+            values().update(spreadsheetId=self.sheet_id,
+                            range=range_name,
+                            valueInputOption=self.value_input_option,
+                            body=body).execute()
 
     def write_stock_summary(self, sheet_name, stocks, start_date=None, end_date=None):
         start_row = 2
@@ -155,9 +158,11 @@ class GoogleSheet:
         body = {
             'values': values
             }
-        result = self.service.spreadsheets().values().update(spreadsheetId=self.sheetId, range=range_name,
-                                                             valueInputOption=self.value_input_option,
-                                                             body=body).execute()
+        result = self.service.spreadsheets(). \
+            values().update(spreadsheetId=self.sheet_id,
+                            range=range_name,
+                            valueInputOption=self.value_input_option,
+                            body=body).execute()
 
     def write_stock_history(self, sheet_name, stocks, start_date=None, end_date=None):
         start_row = 2
@@ -184,19 +189,24 @@ class GoogleSheet:
         body = {
             'values': values
             }
-        result = self.service.spreadsheets().values().update(spreadsheetId=self.sheetId, range=range_name,
-                                                             valueInputOption=self.value_input_option,
-                                                             body=body).execute()
+        result = self.service.spreadsheets(). \
+            values().update(spreadsheetId=self.sheet_id,
+                            range=range_name,
+                            valueInputOption=self.value_input_option,
+                            body=body).execute()
 
     def stock_to_history_row(self, stock, row, summary_row, start_date=None, end_date=None):
         stock_list = ['=HYPERLINK("%s"; "%s")' % (stock.avanza_url, stock.name),
                       '=%s*F%s' % (stock.avanza_price, row),
                       '=IF(%s=0;0;%s/%s)' % (
-                      _float_to_str(stock.sold_units), _float_to_str(stock.sold_sum), _float_to_str(stock.sold_units)),
-                      '=IF(%s=0;0;%s/%s)' % (_float_to_str(stock.sum_of_units), _float_to_str(stock.purchasing_sum),
-                                             _float_to_str(stock.sum_of_units)),
+                          _float_to_str(stock.sold_units), _float_to_str(stock.sold_sum),
+                          _float_to_str(stock.sold_units)),
+                      '=IF(%s=0;0;%s/%s)' % (
+                          _float_to_str(stock.sum_of_units), _float_to_str(stock.purchasing_sum),
+                          _float_to_str(stock.sum_of_units)),
                       '%s' % _float_to_str(stock.purchasing_sum)]
-        #        stock_list.append('=%s*J%s' % (self._float_to_str(stock.get_price(start_date, end_date)), row)) ## E
+        #        stock_list.append('=%s*J%s' % (self._float_to_str(stock.get_price(start_date,
+        #        end_date)), row)) ## E
         # J = Currency
         if stock.currency == "SEK":
             stock_list.append(1)
@@ -211,12 +221,15 @@ class GoogleSheet:
         return stock_list
 
     def stock_to_row(self, stock, row, summary_row, start_date=None, end_date=None):
-        stock_list = ['=HYPERLINK("%s"; "%s")' % (stock.avanza_url, stock.name), '=E%s*F%s' % (row, row),
+        stock_list = ['=HYPERLINK("%s"; "%s")' % (stock.avanza_url, stock.name),
+                      '=E%s*F%s' % (row, row),
                       '=B%s-H%s' % (row, row), '=IF(H%s=0;B%s/100;C%s/H%s)' % (row, row, row, row),
-                      '=%s*J%s' % (stock.avanza_price, row), '%s' % _float_to_str(stock.total_units),
+                      '=%s*J%s' % (stock.avanza_price, row),
+                      '%s' % _float_to_str(stock.total_units),
                       '%s' % _float_to_str(stock.get_total_price()), '=G%s*F%s' % (row, row),
                       '=B%s/B%s' % (row, summary_row)]
-        #        stock_list.append('=%s*J%s' % (self._float_to_str(stock.get_price(start_date, end_date)), row)) ## E
+        #        stock_list.append('=%s*J%s' % (self._float_to_str(stock.get_price(start_date,
+        #        end_date)), row)) ## E
         # J = Currency
         if stock.currency == "SEK":
             stock_list.append(1)
@@ -226,7 +239,8 @@ class GoogleSheet:
         stock_list.append('=J%s*%s*T%s' % (row, _float_to_str(stock.get_dividend_forecast()), row))
         # L = Arets utdelning
         if start_date and end_date:
-            stock_list.append('=%s' % (_float_to_str(stock.get_total_dividends(start_date, end_date))))
+            stock_list.append(
+                '=%s' % (_float_to_str(stock.get_total_dividends(start_date, end_date))))
         else:
             stock_list.append('=%s' % (_float_to_str(
                 stock.get_total_dividends(datetime(datetime.today().year, 1, 1).date(),
@@ -245,7 +259,8 @@ class GoogleSheet:
         return stock_list
 
     def db_dividend_to_sheet(self, transaction, row):
-        dividend_list = [str(transaction.date), str(type(transaction).__name__), str(transaction.stock),
+        dividend_list = [str(transaction.date), str(type(transaction).__name__),
+                         str(transaction.stock),
                          _float_to_str(transaction.units), _float_to_str(transaction.price),
                          "=D%s*E%s" % (row, row), "=YEAR(A%s)" % row, "=MONTH(A%s)" % row,
                          '=text(N(H%s)&"-1";"MMMM")' % row]
@@ -254,7 +269,8 @@ class GoogleSheet:
 
     def db_transaction_to_sheet(self, transaction, row):
         transaction_list = [str(transaction.date), str(type(transaction).__name__),
-                            _float_to_str(transaction.amount), "=YEAR(A%s)" % row, "=MONTH(A%s)" % row,
+                            _float_to_str(transaction.amount), "=YEAR(A%s)" % row,
+                            "=MONTH(A%s)" % row,
                             '=text(N(E%s)&"-1";"MMMM")' % row]
 
         return transaction_list
@@ -262,7 +278,7 @@ class GoogleSheet:
     def read_stocks(self):
         range_name = 'Innehav!A2:E15'
         result = self.service.spreadsheets().values().get(
-            spreadsheetId=self.sheetId, range=range_name).execute()
+            spreadsheetId=self.sheet_id, range=range_name).execute()
         values = result.get('values', [])
 
         if not values:
