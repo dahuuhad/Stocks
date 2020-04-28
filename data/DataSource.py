@@ -5,9 +5,9 @@ import csv
 import logging
 import os
 
+from parser.Parser import AvanzaTransactionParser
 from Stock import Stock
 from Transaction import Dividend
-from parser.Parser import AvanzaTransactionParser
 
 
 class DataSource(object):
@@ -34,6 +34,8 @@ class DataSource(object):
                 if isinstance(transaction, Dividend):
                     transactions.append(transaction)
             return transactions
+        else:
+            return None
 
 
 def _is_csv_file(file_path):
@@ -42,7 +44,8 @@ def _is_csv_file(file_path):
 
 
 class CvsDataSource(DataSource):
-    def __init__(self, root_path="", transaction_path="transactions", stock_definition_file="Stocks.txt"):
+    def __init__(self, root_path="", transaction_path="transactions",
+                 stock_definition_file="Stocks.txt"):
         super(CvsDataSource, self).__init__()
         self.root_path = root_path
         self.transaction_path = None
@@ -53,8 +56,8 @@ class CvsDataSource(DataSource):
         self._read_transactions()
 
     def _read_stocks(self):
-        with open(os.path.join(self.root_path, self.stock_definition_file), 'r') as f:
-            reader = csv.reader(f, dialect='excel', delimiter=';')
+        with open(os.path.join(self.root_path, self.stock_definition_file), 'r') as csv_file:
+            reader = csv.reader(csv_file, dialect='excel', delimiter=';')
             for row in reader:
                 self.add_stock(Stock(*row))
 
@@ -63,8 +66,8 @@ class CvsDataSource(DataSource):
         for file_name in os.listdir(self.transaction_path):
             if _is_csv_file(os.path.join(self.transaction_path, file_name)):
                 logging.info("Parsing %s" % file_name)
-                with open(os.path.join(self.transaction_path, file_name), 'r') as f:
-                    reader = csv.reader(f, dialect='excel', delimiter=';')
+                with open(os.path.join(self.transaction_path, file_name), 'r') as csv_file:
+                    reader = csv.reader(csv_file, dialect='excel', delimiter=';')
                     for row in reader:
                         transaction = transaction_parser.parse_row(*row)
                         if transaction is not None:

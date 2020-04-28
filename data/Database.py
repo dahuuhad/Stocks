@@ -3,10 +3,10 @@ import logging
 import os
 import sqlite3 as lite
 from collections import OrderedDict
-from datetime import datetime, date
+from datetime import date, datetime
 
 from Stock import Stock
-from Transaction import Dividend, Buy, Sell, Split, Withdrawal, Deposit
+from Transaction import Buy, Deposit, Dividend, Sell, Split, Withdrawal
 
 
 class UnknownStockException(Exception):
@@ -52,9 +52,9 @@ class Database:
 
     def _read_and_execute_sql_from_file(self, sql_file_path):
         logging.debug("Reading sql commands from %s" % sql_file_path)
-        f = open(sql_file_path, 'r')
-        sql = f.read()
-        f.close()
+        sql_file = open(sql_file_path, 'r')
+        sql = sql_file.read()
+        sql_file.close()
         lite.complete_statement(sql)
         sql_commands = sql.split(';')
         for sql_command in sql_commands:
@@ -90,7 +90,8 @@ class Database:
         logging.debug("Dividends received during they year")
         today = date(datetime.today().year, 1, 1).strftime("%Y-%m-%d")
         logging.debug("Today: %s" % today)
-        sql = "SELECT COUNT(DISTINCT trans_date) FROM transactions WHERE trans_type = 'Dividend' AND"
+        sql = "SELECT COUNT(DISTINCT trans_date) FROM transactions " \
+              "WHERE trans_type = 'Dividend' AND"
         sql += " stock = '%s' AND trans_date > '%s'" % (stock, today)
         logging.debug(sql)
         cur = self.con.cursor()
@@ -102,7 +103,8 @@ class Database:
 
     def get_all_stocks(self, start_date=None, end_date=None, in_portfolio=True):
         logging.debug("Get stock information from database")
-        sql = "SELECT signature, name, exchange, currency, dividend_per_year, dividend_forecast, bloomberg_signature"
+        sql = "SELECT signature, name, exchange, currency, dividend_per_year, " \
+              "dividend_forecast, bloomberg_signature"
         sql += " ,stock_id, stock_name, IFNULL(is_stock, 1) is_stock FROM stocks"
         sql += " LEFT OUTER JOIN stock_bloomberg ON signature=stock_bloomberg.stock"
         sql += " LEFT OUTER JOIN stock_avanza ON signature=stock_avanza.stock"
@@ -131,8 +133,10 @@ class Database:
             avanza_id = row[7]
             avanza_name = row[8]
             is_stock = row[9]
-            stock = Stock(signature, row[1], google, yahoo, currency, 'Aktie', self.get_descriptions(signature),
-                          dividend_per_year, dividend_forecast, bloomberg, avanza_id, avanza_name, is_stock)
+            stock = Stock(signature, row[1], google, yahoo, currency, 'Aktie',
+                          self.get_descriptions(signature),
+                          dividend_per_year, dividend_forecast, bloomberg,
+                          avanza_id, avanza_name, is_stock)
 
             transactions = self.get_transactions(signature, start_date=None, end_date=None)
             for trans in transactions:
@@ -152,7 +156,8 @@ class Database:
 
     def save_price(self, stock, date, price):
         logging.debug("Saving historical price for %s" % stock)
-        sql = "INSERT OR REPLACE INTO prices (stock, price_date, price) VALUES (%s, %s, %s)" % (stock, date, price)
+        sql = "INSERT OR REPLACE INTO prices (stock, price_date, price) " \
+              "VALUES (%s, %s, %s)" % (stock, date, price)
         cur = self.con.cursor()
         cur.execute(sql)
         self.con.commit()
@@ -172,10 +177,12 @@ class Database:
         split_ratio = 1.0
         if transaction.str_type == "Split":
             split_ratio = self._get_split_ratio(stock_key)
-        sql = "INSERT INTO transactions (trans_date, trans_type, stock, units, price, fees, split_ratio) " \
+        sql = "INSERT INTO transactions (trans_date, trans_type, stock, " \
+              "units, price, fees, split_ratio) " \
               "VALUES (?, ?, ?, ?, ?, ?, ?)"
         cur = self.con.cursor()
-        transactions = ((transaction.date.strftime("%Y-%m-%d %H:%M:%S"), transaction.str_type, stock_key,
+        transactions = ((transaction.date.strftime("%Y-%m-%d %H:%M:%S"),
+                         transaction.str_type, stock_key,
                          transaction.units, transaction.price, transaction.amount, split_ratio),)
         logging.debug(transactions)
         try:
@@ -223,14 +230,17 @@ class Database:
                 json.dump(json_row, file)
                 file.write('\n')
 
-    def get_transactions(self, stock=None, transaction_type=None, start_date=None, end_date=None, return_json=False):
-        sql = "SELECT trans_date, trans_type, stock, name, units, price, fees, split_ratio FROM transactions"
+    def get_transactions(self, stock=None, transaction_type=None,
+                         start_date=None, end_date=None, return_json=False):
+        sql = "SELECT trans_date, trans_type, stock, name, units," \
+              "price, fees, split_ratio FROM transactions"
         if not stock:
             sql += " LEFT"
         sql += " JOIN stocks ON stock=signature"
         sql_operator = "WHERE"
         if transaction_type:
-            sql += " %s trans_type IN (%s)" % (sql_operator, ",".join("'{0}'".format(t) for t in transaction_type))
+            sql += " %s trans_type IN (%s)" % \
+                   (sql_operator, ",".join("'{0}'".format(t) for t in transaction_type))
             sql_operator = "AND"
         if stock:
             sql += " %s signature = '%s'" % (sql_operator, stock)
@@ -248,16 +258,19 @@ class Database:
         transactions = []
         for trans in result:
             if trans.get('trans_type') == "Sell":
-                transactions.append(Sell(trans.get('stock'), trans.get('trans_date'), trans.get('price'),
+                transactions.append(Sell(trans.get('stock'), trans.get('trans_date'),
+                                         trans.get('price'),
                                          trans.get('units'), trans.get('fees')))
             elif trans.get('trans_type') in ('Buy', 'Transfer'):
-                transactions.append(Buy(trans.get('stock'), trans.get('trans_date'), trans.get('price'),
+                transactions.append(Buy(trans.get('stock'), trans.get('trans_date'),
+                                        trans.get('price'),
                                         trans.get('units'), trans.get('fees')))
             elif trans.get('trans_type') == "Dividend":
-                transactions.append(Dividend(trans.get('name'), trans.get('trans_date'), trans.get('price'),
-                                             trans.get('units')))
+                transactions.append(Dividend(trans.get('name'), trans.get('trans_date'),
+                                             trans.get('price'), trans.get('units')))
             elif trans.get('trans_type') == "Split":
-                transactions.append(Split(trans.get('stock'), trans.get('trans_date'), trans.get('split_ratio')))
+                transactions.append(Split(trans.get('stock'), trans.get('trans_date'),
+                                          trans.get('split_ratio')))
             elif trans.get('trans_type') == "Withdrawal":
                 logging.debug(trans.get('fees'))
                 transactions.append(Withdrawal(trans.get('trans_date'), trans.get('fees')))
@@ -275,12 +288,13 @@ class Database:
         logging.debug(query)
         cur = self.con.cursor()
         cur.execute(str(query), args)
-        r = [OrderedDict((cur.description[i][0], value) for i, value in enumerate(row)) for row in cur.fetchall()]
-        return (r[0] if r else None) if one else r
+        result = [OrderedDict((cur.description[i][0], value)
+                              for i, value in enumerate(row)) for row in cur.fetchall()]
+        return (result[0] if result else None) if one else result
 
     @staticmethod
     def dict_factory(cursor, row):
-        d = {}
+        dict = {}
         for idx, col in enumerate(cursor.description):
-            d[col[0]] = row[idx]
-        return d
+            dict[col[0]] = row[idx]
+        return dict
