@@ -141,6 +141,15 @@ def main():
         transactions = database.get_transactions(transaction_type=["Deposit", "Withdrawal"])
         sheet.write_transactions("Transaktioner", transactions)
 
+        taxes = database.get_transactions(transaction_type=["Tax", "Withholding"])
+        sheet.write_transactions("Skatt", taxes)
+
+        earnings = database.get_transactions(transaction_type=["Earning"])
+        sheet.write_transactions("Ränta", earnings)
+
+        fees = database.get_transactions(transaction_type=["Fee"])
+        sheet.write_transactions("Avgifter", fees)
+
         today = datetime.now()
         start_date = datetime(today.year, 1, 1).strftime("%Y-%m-%d")
         end_date = datetime(today.year, today.month, today.day).strftime("%Y-%m-%d")

@@ -156,3 +156,21 @@ class Tax(Transaction):
 
     def __str__(self):
         return "%s, %s" % (super(Tax, self).__str__(), self.amount)
+
+
+class Earning(Transaction):
+    def __init__(self, date, amount):
+        super(Earning, self).__init__("Earning", None, date)
+        self.amount = amount
+
+    def __str__(self):
+        return "%s, %s" % (super(Earning, self).__str__(), self.amount)
+
+
+class Fee(Transaction):
+    def __init__(self, date, amount):
+        super(Fee, self).__init__("Fee", None, date)
+        self.amount = amount
+
+    def __str__(self):
+        return "%s, %s" % (super(Fee, self).__str__(), self.amount)

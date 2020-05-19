@@ -13,7 +13,6 @@ try:
 
     FLAGS = tools.argparser.parse_args(args=[])
 
-    # flags = argparse.ArgumentParser(parents=[tools.argparser]).parse_args()
 except ImportError:
     FLAGS = None
 
@@ -26,14 +25,12 @@ APPLICATION_NAME = 'Google Sheets API Python Quickstart'
 
 def _float_to_str(my_float):
     float_str = str(my_float).replace(".", ",")
-    if my_float < 0.0:
-        float_str = float_str
     return float_str
 
 
 def create_empty_rows(start_row, number_of_empty_rows):
     empty_rows = []
-    for i in range(start_row, start_row + number_of_empty_rows):
+    for _ in range(start_row, start_row + number_of_empty_rows):
         empty_row = []
         for c in ascii_uppercase:
             empty_row.append('')
@@ -122,6 +119,12 @@ class GoogleSheet:
             if sheet_name == "Utdelningar":
                 values.append(self.db_dividend_to_sheet(transaction, row))
             elif sheet_name == "Transaktioner":
+                values.append(self.db_transaction_to_sheet(transaction, row))
+            elif sheet_name == "Ränta":
+                values.append(self.db_transaction_to_sheet(transaction, row))
+            elif sheet_name == "Skatt":
+                values.append(self.db_transaction_to_sheet(transaction, row))
+            elif sheet_name == "Avgifter":
                 values.append(self.db_transaction_to_sheet(transaction, row))
             row += 1
         body = {

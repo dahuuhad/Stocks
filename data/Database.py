@@ -6,7 +6,7 @@ from collections import OrderedDict
 from datetime import date, datetime
 
 from Stock import Stock
-from Transaction import Buy, Deposit, Dividend, Sell, Split, Withdrawal
+from Transaction import Buy, Deposit, Dividend, Earning, Fee, Sell, Split, Tax, Withdrawal
 
 
 class UnknownStockException(Exception):
@@ -276,6 +276,12 @@ class Database:
                 transactions.append(Withdrawal(trans.get('trans_date'), trans.get('fees')))
             elif trans.get('trans_type') == "Deposit":
                 transactions.append(Deposit(trans.get('trans_date'), trans.get('fees')))
+            elif trans.get('trans_type') == "Earning":
+                transactions.append(Earning(trans.get('trans_date'), trans.get('fees')))
+            elif trans.get('trans_type') == "Tax":
+                transactions.append(Tax(trans.get('trans_date'), trans.get('fees')))
+            elif trans.get('trans_type') == "Fee":
+                transactions.append(Fee(trans.get('trans_date'), trans.get('fees')))
 
         return transactions
 

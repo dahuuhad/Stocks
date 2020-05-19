@@ -3,7 +3,7 @@
 __author__ = 'daniel'
 import logging
 
-from Transaction import Buy, Sell, Dividend, Transfer, Split, Deposit, Withdrawal, Tax
+from Transaction import Buy, Deposit, Dividend, Earning, Fee, Sell, Split, Tax, Transfer, Withdrawal
 
 
 def _convert_units_by_transaction_type(transaction_type, units):
@@ -22,7 +22,18 @@ def _ignore_transaction(account, transaction_type):
     return "Paulina ISK" == account or "1455005" in transaction_type or "Roger" in transaction_type
 
 
+def _transaction_is_buy(transaction_type):
+    if transaction_type == u"Köp":
+        return True
+    startswith_list = ["Teckningslikvid", "OMVANDLING", "BANCO SANT VP UTD",
+                       "VP-UTD", "VPU AV MTG B", "Avknoppning", "Inl"]
+    for transaction_str in startswith_list:
+        if transaction_type.startswith(transaction_str):
+            return True
+    return False
+
 class Parser(object):
+
     def parse_row(self, date, account, transaction_type, description, units, price, amount, fee, currency, isin=None):
         logging.debug(account)
         if date == "Datum" or account == "Konto" or "Paulina" in account:
@@ -41,10 +52,7 @@ class Parser(object):
             return None
         if transaction_type == u"Utdelning":
             return Dividend(description, date, price, units)
-        elif transaction_type == u"Köp" or transaction_type.startswith("Teckningslikvid") \
-                or transaction_type.startswith("OMVANDLING") or transaction_type.startswith("BANCO SANT VP UTD") \
-                or transaction_type.startswith("VP-UTD") or transaction_type.startswith("VPU AV MTG B") \
-                or transaction_type.startswith("Avknoppning") or transaction_type.startswith("Inl"):
+        elif _transaction_is_buy(transaction_type):
             return Buy(description, date, price, units, amount)
         elif transaction_type == u"Sälj" or transaction_type == u"Köp, rättelse":
             return Sell(description, date, price, units, amount)
@@ -57,8 +65,19 @@ class Parser(object):
             return Deposit(date, amount)
         elif transaction_type == u"Uttag":
             return Withdrawal(date, amount)
-        elif transaction_type == u"Utländsk källskatt 15%":
+        elif u"Prelskatt utdelningar" == transaction_type or \
+                (transaction_type == u"Övrigt" and "källskatt" in description) or \
+                transaction_type.startswith(u"Utländsk källskatt") or \
+                transaction_type == u"Preliminärskatt" or \
+                (transaction_type == u"Övrigt" and description == u"Avkastningsskatt"):
             return Tax(date, amount)
+        elif transaction_type == u"Övrigt" and description == u"Riskpremie":
+            return Fee(date, amount)
+        elif transaction_type == u"Räntor" or \
+                (
+                        transaction_type == u"Övrigt" and description == u"Överföring ränta "
+                                                                         u"kapitalmedelskonto"):
+            return Earning(date, amount)
         logging.error("Unknown transaction %s" % ([date, account, transaction_type, description,
                                                    units, price, amount, fee, currency]))
         return None
