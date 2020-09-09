@@ -1,3 +1,5 @@
+# -*- coding: iso-8859-15 -*-
+
 import os
 from datetime import datetime
 from string import ascii_uppercase
@@ -120,7 +122,7 @@ class GoogleSheet:
                 values.append(self.db_dividend_to_sheet(transaction, row))
             elif sheet_name == "Transaktioner":
                 values.append(self.db_transaction_to_sheet(transaction, row))
-            elif sheet_name == "RÃ¤nta":
+            elif sheet_name == "Ränta":
                 values.append(self.db_transaction_to_sheet(transaction, row))
             elif sheet_name == "Skatt":
                 values.append(self.db_transaction_to_sheet(transaction, row))
@@ -216,21 +218,23 @@ class GoogleSheet:
         else:
             stock_list.append('=GoogleFinance("CURRENCY:%sSEK")' % str(stock.currency))
 
-        stock_list.append('%s' % _float_to_str(stock.get_total_dividends()))
-        stock_list.append('%s' % _float_to_str(stock.realized_gain))
-        stock_list.append('=G%s+H%s' % (row, row))
-        stock_list.append('=IF(I%s=0;0;IF(E%s=0;1,0;I%s/E%s))' % (row, row, row, row))
+        stock_list.append('{}'.format(_float_to_str(stock.get_total_dividends())))
+        stock_list.append('{}'.format(_float_to_str(stock.realized_gain)))
+        stock_list.append('=G{0}+H{0}'.format(row))
+        stock_list.append('=IF(I{0}=0;0;IF(E{0}=0;1,0;I{0}/E{0}))'.format(row))
 
         return stock_list
 
     def stock_to_row(self, stock, row, summary_row, start_date=None, end_date=None):
-        stock_list = ['=HYPERLINK("%s"; "%s")' % (stock.avanza_url, stock.name),
-                      '=E%s*F%s' % (row, row),
-                      '=B%s-H%s' % (row, row), '=IF(H%s=0;B%s/100;C%s/H%s)' % (row, row, row, row),
-                      '=%s*J%s' % (stock.avanza_price, row),
-                      '%s' % _float_to_str(stock.total_units),
-                      '%s' % _float_to_str(stock.get_total_price()), '=G%s*F%s' % (row, row),
-                      '=B%s/B%s' % (row, summary_row)]
+        stock_list = ['=HYPERLINK("{}"; "{}")'.format(stock.avanza_url, stock.name),
+                      '=E{0}*F{0}'.format(row),
+                      '=B{0}-H{0}'.format(row),
+                      '=IF(H{0}=0;B{0}/100;C{0}/H{0})'.format(row),
+                      '={}*J{}'.format(stock.avanza_price, row),
+                      '{}'.format(_float_to_str(stock.total_units)),
+                      '{}'.format(_float_to_str(stock.get_total_price())),
+                      '=G{0}*F{0}'.format(row),
+                      '=B{}/B{}'.format(row, summary_row)]
         #        stock_list.append('=%s*J%s' % (self._float_to_str(stock.get_price(start_date,
         #        end_date)), row)) ## E
         # J = Currency
@@ -250,14 +254,14 @@ class GoogleSheet:
                                           datetime(datetime.today().year, 12, 31).date()))))
 
         # M = Utdelningsprognos
-        stock_list.append('=F%s*K%s' % (row, row))
-        stock_list.append('=IF(G14=0;0; K%s/G%s)' % (row, row))
-        stock_list.append('=K%s/E%s' % (row, row))
-        stock_list.append('%s' % _float_to_str(stock.get_total_dividends()))
-        stock_list.append('%s' % _float_to_str(stock.realized_gain))
-        stock_list.append('=P%s+Q%s' % (row, row))
-        stock_list.append('=IF(H%s=0;B%s/100;R%s/H%s)' % (row, row, row, row))
-        stock_list.append('%s' % _float_to_str(stock.dividend_per_year))
+        stock_list.append('=F{0}*K{0}'.format(row))
+        stock_list.append('=IF(G{0}=0;0; K{0}/G{0})'.format(row))
+        stock_list.append('=K{0}/E{0}'.format(row))
+        stock_list.append('{}'.format(_float_to_str(stock.get_total_dividends())))
+        stock_list.append('{}'.format(_float_to_str(stock.realized_gain)))
+        stock_list.append('=P{0}+Q{0}'.format(row))
+        stock_list.append('=IF(H{0}=0;B{0}/100;R{0}/H{0})'.format(row))
+        stock_list.append('{}'.format(_float_to_str(stock.dividend_per_year)))
 
         return stock_list
 
