@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: iso-8859-15 -*-
 
 __author__ = 'daniel'
 import logging
@@ -7,23 +7,24 @@ from Transaction import Buy, Deposit, Dividend, Earning, Fee, Sell, Split, Tax, 
 
 
 def _convert_units_by_transaction_type(transaction_type, units):
-    if transaction_type.lower().startswith(u'√∂vf till'):
+    if transaction_type.lower().startswith(u'ˆvf till'):
         return -units
     return units
 
 
 def _transaction_is_transfer(transaction_type):
-    # print transaction_type, transaction_type.startswith(u'√ñverf√∂ring'), transaction_type.startswith(u'√ñvf')
-    return transaction_type.startswith(u'√ñverf√∂ring') or transaction_type.lower().startswith(u'√∂vf')
+    # print transaction_type, transaction_type.startswith(u'÷verfˆring'),
+    # transaction_type.startswith(u'÷vf')
+    return transaction_type.startswith(u'÷verfˆring') or transaction_type.lower().startswith(u'ˆvf')
 
 
 def _ignore_transaction(account, transaction_type):
     logging.debug("Transaction type: %s" % transaction_type)
-    return "Paulina ISK" == account or "1455005" in transaction_type or "Roger" in transaction_type
+    return account == "Paulina ISK" or "1455005" in transaction_type or "Roger" in transaction_type
 
 
 def _transaction_is_buy(transaction_type):
-    if transaction_type == u"K√∂p":
+    if transaction_type == u"Kˆp":
         return True
     startswith_list = ["Teckningslikvid", "OMVANDLING", "BANCO SANT VP UTD",
                        "VP-UTD", "VPU AV MTG B", "Avknoppning", "Inl"]
@@ -32,66 +33,70 @@ def _transaction_is_buy(transaction_type):
             return True
     return False
 
-class Parser(object):
 
-    def parse_row(self, date, account, transaction_type, description, units, price, amount, fee, currency, isin=None):
+class Parser():
+
+    def parse_row(self, date, account, transaction_type, description, units, price,
+                  amount, fee, currency, isin=None):
         logging.debug(account)
         if date == "Datum" or account == "Konto" or "Paulina" in account:
             logging.debug(account)
             return None
-        logging.debug((date, account, transaction_type, description, units, price, amount, fee, currency))
+        logging.debug((date, account, transaction_type, description, units,
+                       price, amount, fee, currency))
         units = self.num(units)
         price = self.num(price)
         amount = self.num(amount)
         fee = self.num(fee)
 
-        logging.debug("%s == %s => %s" % (transaction_type, u"Utdelning", (transaction_type == u"Utdelning")))
+        logging.debug("%s == %s => %s", transaction_type, u"Utdelning",
+                      (transaction_type == u"Utdelning"))
         if _ignore_transaction(account, transaction_type):
-            logging.debug("Ignoring transaction %s" % ([date, account, transaction_type, description,
-                                                        units, price, amount, fee, currency]))
+            logging.debug("Ignoring transaction %s", [date, account, transaction_type, description,
+                                                      units, price, amount, fee, currency])
             return None
         if transaction_type == u"Utdelning":
             return Dividend(description, date, price, units)
         elif _transaction_is_buy(transaction_type):
             return Buy(description, date, price, units, amount)
-        elif transaction_type == u"S√§lj" or transaction_type == u"K√∂p, r√§ttelse":
+        elif transaction_type in (u"S‰lj", u"Kˆp, r‰ttelse"):
             return Sell(description, date, price, units, amount)
-        elif transaction_type == u"Split" or transaction_type == u"Omv√§nd split":
+        elif transaction_type in (u"Split", u"Omv‰nd split"):
             return Split(description, date, units)
         elif _transaction_is_transfer(transaction_type):
             units = _convert_units_by_transaction_type(transaction_type, units)
             return Transfer(description, date, units)
-        elif transaction_type == u"Ins√§ttning":
+        elif transaction_type == u"Ins‰ttning":
             return Deposit(date, amount)
         elif transaction_type == u"Uttag":
             return Withdrawal(date, amount)
-        elif u"Prelskatt utdelningar" == transaction_type or \
-                (transaction_type == u"√ñvrigt" and "k√§llskatt" in description) or \
-                transaction_type.startswith(u"Utl√§ndsk k√§llskatt") or \
-                transaction_type == u"Prelimin√§rskatt" or \
-                (transaction_type == u"√ñvrigt" and description == u"Avkastningsskatt"):
+        elif transaction_type == u"Prelskatt utdelningar" or \
+                (transaction_type == u"÷vrigt" and "k‰llskatt" in description) or \
+                transaction_type.startswith(u"Utl‰ndsk k‰llskatt") or \
+                transaction_type == u"Prelimin‰rskatt" or \
+                (transaction_type == u"÷vrigt" and description == u"Avkastningsskatt"):
             return Tax(date, amount)
-        elif transaction_type == u"√ñvrigt" and description == u"Riskpremie":
+        elif transaction_type == u"÷vrigt" and description == u"Riskpremie":
             return Fee(date, amount)
-        elif transaction_type == u"R√§ntor" or \
+        elif transaction_type == u"R‰ntor" or \
                 (
-                        transaction_type == u"√ñvrigt" and description == u"√ñverf√∂ring r√§nta "
+                        transaction_type == u"÷vrigt" and description == u"÷verfˆring r‰nta "
                                                                          u"kapitalmedelskonto"):
             return Earning(date, amount)
-        logging.error("Unknown transaction %s" % ([date, account, transaction_type, description,
-                                                   units, price, amount, fee, currency]))
+        logging.error("Unknown transaction %s", [date, account, transaction_type, description,
+                                                 units, price, amount, fee, currency])
         return None
 
     @staticmethod
-    def num(s):
+    def num(my_str):
         try:
-            s = s.replace(',', '.')
-            if len(s) == 1:
-                s = s.replace('-', '0')
-            return int(s)
+            my_str = my_str.replace(',', '.')
+            if len(my_str) == 1:
+                my_str = my_str.replace('-', '0')
+            return int(my_str)
         except ValueError:
-            logging.debug("Error when converting to int, trying float instead: %s" % s)
-            return float(s)
+            logging.debug("Error when converting to int, trying float instead: %s", my_str)
+            return float(my_str)
 
 
 class AvanzaTransactionParser(Parser):

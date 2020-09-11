@@ -6,7 +6,7 @@ import logging
 import os
 
 from parser.Parser import AvanzaTransactionParser
-from Stock import Stock
+from stock import Stock
 from Transaction import Dividend
 
 

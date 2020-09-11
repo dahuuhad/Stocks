@@ -5,7 +5,7 @@ import sqlite3 as lite
 from collections import OrderedDict
 from datetime import date, datetime
 
-from Stock import Stock
+from stock import Stock
 from Transaction import Buy, Deposit, Dividend, Earning, Fee, Sell, Split, Tax, Withdrawal
 
 

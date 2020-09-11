@@ -45,8 +45,6 @@ def get_credentials():
         flow.user_agent = APPLICATION_NAME
         if flags:
             credentials = tools.run_flow(flow, store, flags)
-        else:  # Needed only for compatibility with Python 2.6
-            credentials = tools.run(flow, store)
         print('Storing credentials to ' + credential_path)
     return credentials
 
@@ -84,16 +82,17 @@ def main():
     values = [
         [
             "AAPL", "=3+7", "40000000", "=GoogleFinance(\"NASDAQ:AAPL\")"
-        ],
+            ],
         # Additional rows ...
-    ]
+        ]
     body = {
         'values': values
-    }
+        }
     range_name = 'Innehav!A20:E'
     value_input_option = 'USER_ENTERED'
     result = service.spreadsheets().values().update(spreadsheetId=spreadsheet_id, range=range_name,
-                                                    valueInputOption=value_input_option, body=body).execute()
+                                                    valueInputOption=value_input_option,
+                                                    body=body).execute()
 
 
 if __name__ == '__main__':

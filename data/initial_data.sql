@@ -209,4 +209,3 @@ insert OR REPLACE INTO split_ratio (stock, ratio) VALUES
 ('SBUX', 2.0),
 ('VOLV-B', 6.0),
 ('ERIC-B', 0.2);
-

@@ -4,7 +4,7 @@ import os
 __author__ = 'daniel'
 from tabulate import tabulate
 
-from Stock import Stock
+from stock import Stock
 from Transaction import Dividend, Buy, Sell, Transfer, Split
 
 

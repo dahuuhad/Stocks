@@ -1,3 +1,4 @@
+# -*- coding: iso-8859-15 -*-
 __author__ = 'daniel'
 
 import argparse
@@ -145,7 +146,7 @@ def main():
         sheet.write_transactions("Skatt", taxes)
 
         earnings = database.get_transactions(transaction_type=["Earning"])
-        sheet.write_transactions("RÃ¤nta", earnings)
+        sheet.write_transactions("Ränta", earnings)
 
         fees = database.get_transactions(transaction_type=["Fee"])
         sheet.write_transactions("Avgifter", fees)

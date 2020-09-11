@@ -5,8 +5,8 @@ import logging
 import requests
 from bs4 import BeautifulSoup
 
-from Transaction import Buy, Sell, Split, Dividend
 from data.FinanceService import FinanceService
+from Transaction import Buy, Dividend, Sell, Split
 
 
 def _get_fund_price(name):
@@ -18,7 +18,7 @@ def _get_fund_price(name):
     return soup.find('span', class_='js_real-time-stock-details-price').getText(strip=True)
 
 
-class Stock(object):
+class Stock:
     def __init__(self, key, name, google_quote, yahoo_quote,
                  currency, kind="Aktie", descriptions=None,
                  dividend_per_year=1, dividend_forecast=0.0,
@@ -42,20 +42,20 @@ class Stock(object):
         self.dividend_forecast_per_stock = dividend_forecast
 
         if is_stock == 1:
-            self.avanza_url = "https://www.avanza.se/aktier/om-aktien.html/%s/%s" % \
-                              (avanza_id, avanza_name)
-            self.avanza_price = "IMPORTXML(\"%s\"; \"// span [@class='pushBox roundCorners3']\")" % \
-                                self.avanza_url
+            self.avanza_url = f"https://www.avanza.se/aktier/om-aktien.html/{avanza_id}/" \
+                              f"{avanza_name}"
+            self.avanza_price = f"IMPORTXML(\"{self.avanza_url}\"; \"// span [@class='pushBox " \
+                                f"roundCorners3']\")"
         elif is_stock == 0:
             logging.info(self.name)
-            self.avanza_url = "https://www.avanza.se/fonder/om-fonden.html/%s/%s" % \
-                              (avanza_id, avanza_name)
+            self.avanza_url = f"https://www.avanza.se/fonder/om-fonden.html/{avanza_id}/" \
+                              f"{avanza_name}"
             self.avanza_price = _get_fund_price(self.bloomberg_finance)
         elif is_stock == 2:
-            self.avanza_url = "https://www.avanza.se/borshandlade-produkter/etf-torg/om-fonden.html/%s/%s" % \
-                              (avanza_id, avanza_name)
-            self.avanza_price = "IMPORTXML(\"%s\"; \"// span [@class='pushBox roundCorners3']\")" % \
-                                self.avanza_url
+            self.avanza_url = f"https://www.avanza.se/borshandlade-produkter/etf-torg/om-fonden" \
+                              f".html/{avanza_id}/{avanza_name}"
+            self.avanza_price = f"IMPORTXML(\"{self.avanza_url}\"; \"// span [@class='pushBox " \
+                                f"roundCorners3']\")"
 
         self.total_amount = 0
         self.total_units = 0
@@ -70,7 +70,7 @@ class Stock(object):
     def get_total_price(self):
         if self.total_units == 0:
             return 0
-        return self.total_amount / self.total_units
+        return self.total_amount // self.total_units
 
     def add_price(self, date, price):
         self.prices[date] = price
@@ -83,8 +83,8 @@ class Stock(object):
         return description in self.descriptions or self.key == description
 
     def gain_of_transaction(self, transaction):
-        return (-1 * (transaction.amount / transaction.units) -
-                (self.total_amount / self.total_units)) * transaction.units * -1
+        return (-1 * (transaction.amount // transaction.units) -
+                (self.total_amount // self.total_units)) * transaction.units * -1
 
     def add_transaction(self, transaction):
         add_transaction = True
@@ -93,7 +93,7 @@ class Stock(object):
                 if trans.date == transaction.date and trans.units == transaction.units:
                     add_transaction = False
             if add_transaction and transaction.units > 0:
-                logging.debug("%s" % ([self.name, self.total_amount, transaction.amount]))
+                logging.debug("%s", [self.name, self.total_amount, transaction.amount])
                 self.total_units = self.total_units * transaction.units
         elif isinstance(transaction, Dividend):
             self.total_dividends += transaction.units * transaction.price
@@ -102,9 +102,9 @@ class Stock(object):
             self.total_amount -= transaction.amount
             self.purchasing_sum -= transaction.amount
             self.sum_of_units += transaction.units
-            logging.debug("%s" % ([self.name, transaction.str_type, self.total_amount,
-                                   transaction.amount,
-                                   self.total_units, transaction.units]))
+            logging.debug("%s", [self.name, transaction.str_type, self.total_amount,
+                                 transaction.amount,
+                                 self.total_units, transaction.units])
 
         elif isinstance(transaction, Sell):
             logging.debug(transaction)
@@ -113,9 +113,9 @@ class Stock(object):
             self.total_amount -= transaction.amount
             self.sold_units += transaction.units
             self.sold_sum -= transaction.amount
-            logging.debug("%s" % ([self.name, transaction.str_type, self.total_amount,
-                                   transaction.amount, self.total_units,
-                                   transaction.units, self.realized_gain]))
+            logging.debug("%s", [self.name, transaction.str_type, self.total_amount,
+                                 transaction.amount, self.total_units,
+                                 transaction.units, self.realized_gain])
 
         if add_transaction:
             if self.total_units == 0:
@@ -138,18 +138,16 @@ class Stock(object):
     def get_total_dividends(self, start_date=None, end_date=None):
         if not start_date and not end_date:
             return self.total_dividends
-        else:
-            total_dividends = 0
-            for trans in self.transactions:
-                if isinstance(trans, Dividend) and start_date <= trans.date <= end_date:
-                    total_dividends += trans.amount
-            return total_dividends
+        total_dividends = 0
+        for trans in self.transactions:
+            if isinstance(trans, Dividend) and start_date <= trans.date <= end_date:
+                total_dividends += trans.amount
+        return total_dividends
 
     def calculate_transaction_average(self, transaction):
         if False and self.currency == "SEK":
             return transaction.units * transaction.price + transaction.fee
-        else:
-            return transaction.amount
+        return transaction.amount
 
     @staticmethod
     def to_table_header():
