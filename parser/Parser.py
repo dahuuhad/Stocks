@@ -19,7 +19,7 @@ def _transaction_is_transfer(transaction_type):
 
 
 def _ignore_transaction(account, transaction_type):
-    logging.debug("Transaction type: %s" % transaction_type)
+    logging.debug("Transaction type: %s", transaction_type)
     return account == "Paulina ISK" or "1455005" in transaction_type or "Roger" in transaction_type
 
 
@@ -34,7 +34,7 @@ def _transaction_is_buy(transaction_type):
     return False
 
 
-class Parser():
+class Parser:
 
     def parse_row(self, date, account, transaction_type, description, units, price,
                   amount, fee, currency, isin=None):
