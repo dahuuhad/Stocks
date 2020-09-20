@@ -1,6 +1,7 @@
 # -*- coding: iso-8859-15 -*-
 __author__ = 'daniel'
 
+
 import argparse
 import csv
 import filecmp
@@ -9,17 +10,11 @@ import os
 import sys
 from datetime import datetime
 
-import requests
-from bs4 import BeautifulSoup
+from oauth2client import tools
 
 from data.Database import Database
 from parser.Parser import AvanzaTransactionParser
 from spreadsheet.GoogleSheet import GoogleSheet, write_summary
-
-try:
-    from oauth2client import tools
-except ImportError:
-    pass
 
 PARSER = argparse.ArgumentParser("Read stock information from Avanza and create a Google Sheet",
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter,
@@ -46,14 +41,6 @@ JSON_PATH = os.path.join(os.sep, "Users", "daniel", "Documents", "Aktier", "JSON
 ROOT_PATH = os.path.join(os.sep, "Users", "daniel", "Documents", "Aktier")
 STOCK_FILE = "Stocks.txt"
 PATH_TO_CVS_FILES = "transactions"
-REPORT_PATH = "reports"
-
-
-def find_stock_for_transaction(stocks, transaction):
-    for stock in stocks:
-        if stock.has_description(transaction.stock.decode("latin1")):
-            return stock
-    return None
 
 
 def read_transaction_rows_from_file(transaction_path):
@@ -63,7 +50,7 @@ def read_transaction_rows_from_file(transaction_path):
         raise Exception("Directory does not exists %s" % transaction_path)
     for file_name in sorted(os.listdir(transaction_path)):
         if os.path.splitext(file_name)[1] == ".csv":
-            logging.info("Parsing %s" % file_name)
+            logging.info("Parsing %s", file_name)
             with open(os.path.join(transaction_path, file_name), 'r') as transaction_file:
                 reader = csv.reader(transaction_file, dialect='excel', delimiter=';')
                 for row in reader:
@@ -171,18 +158,6 @@ def main():
 
         # stocks = db.get_all_stocks(in_portfolio=False)
         # sheet.write_stock_summary("Old Portfolio", stocks)
-
-
-def _get_fund_price(fund_id):
-    response = requests.get(
-        "https://www.affarsvarlden.se/bors/fonder/funds-details/%s/funds/" % fund_id)
-    print(response.url)
-    soup = BeautifulSoup(response.text, 'html.parser')
-    for table in soup.find("table", class_="table afv-table-body"):
-        for tr in table.find_all("tr", class_=""):
-            if len(tr) == 0:
-                continue
-            return tr.find_all("span", class_="is-positive")[-1].get_text(strip=True)
 
 
 if __name__ == "__main__":
