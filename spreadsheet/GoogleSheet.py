@@ -34,7 +34,7 @@ def create_empty_rows(start_row, number_of_empty_rows):
     empty_rows = []
     for _ in range(start_row, start_row + number_of_empty_rows):
         empty_row = []
-        for c in ascii_uppercase:
+        for _ in ascii_uppercase:
             empty_row.append('')
         empty_rows.append(empty_row)
     return empty_rows
@@ -43,14 +43,13 @@ def create_empty_rows(start_row, number_of_empty_rows):
 def insert_summary_row(start_row, end_row, summary_row_index):
     summary_row = []
     summary_columns = 'BCHILMPQR'
-    for c in ascii_uppercase:
-        if c == 'A':
+    for letter in ascii_uppercase:
+        if letter == 'A':
             summary_row.append('Totalt')
-        elif c == 'D':
-            summary_row.append(
-                '=(B%s-H%s)/H%s' % (summary_row_index, summary_row_index, summary_row_index))
-        elif c in summary_columns:
-            summary_row.append('=SUM(%s%s:%s%s)' % (c, start_row, c, end_row))
+        elif letter == 'D':
+            summary_row.append('=(B{row}-H{row})/H{row}'.format(row=summary_row_index))
+        elif letter in summary_columns:
+            summary_row.append('=SUM({col}{}:{col}{})'.format(start_row, end_row, col=letter))
         else:
             summary_row.append('')
     return summary_row
@@ -59,9 +58,9 @@ def insert_summary_row(start_row, end_row, summary_row_index):
 def write_summary(sheet_name, transactions):
     start_row = 2
     start_col = 'A'
-    range_name = '%s!%s%s' % (sheet_name, start_col, start_row)
+    range_name = '{sheet}!{col}{row}'.format(sheet=sheet_name, col=start_col, row=start_row)
     values = []
-    for transaction in reversed(transactions):
+    for _ in reversed(transactions):
         transaction_list = ["=now()"]
         values.append(transaction_list)
     body = {
@@ -99,6 +98,46 @@ def get_credentials():
     return credentials
 
 
+def db_dividend_to_sheet(transaction, row):
+    dividend_list = [str(transaction.date),
+                     str(type(transaction).__name__),
+                     str(transaction.stock),
+                     _float_to_str(transaction.units),
+                     _float_to_str(transaction.price),
+                     "=D{row}*E{row}".format(row=row),
+                     "=YEAR(A{row})".format(row=row),
+                     "=MONTH(A{row})".format(row=row),
+                     '=text(N(H{row})&"-1";"MMMM")'.format(row=row)]
+
+    return dividend_list
+
+
+def stock_to_history_row(stock, row, summary_row, start_date=None, end_date=None):
+    stock_list = ['=HYPERLINK("{}"; "{}")'.format(stock.avanza_url, stock.name),
+                  '={}*F{}'.format(stock.avanza_price, row),
+                  '=IF({}=0;0;{}/{})'.format(_float_to_str(stock.sold_units),
+                                             _float_to_str(stock.sold_sum),
+                                             _float_to_str(stock.sold_units)),
+                  '=IF({}=0;0;{}/{})'.format(_float_to_str(stock.sum_of_units),
+                                             _float_to_str(stock.purchasing_sum),
+                                             _float_to_str(stock.sum_of_units)),
+                  '{}'.format(_float_to_str(stock.purchasing_sum))]
+    #        stock_list.append('=%s*J%s' % (self._float_to_str(stock.get_price(start_date,
+    #        end_date)), row)) ## E
+    # J = Currency
+    if stock.currency == "SEK":
+        stock_list.append(1)
+    else:
+        stock_list.append('=GoogleFinance("CURRENCY:{}SEK")'.format(str(stock.currency)))
+
+    stock_list.append('{}'.format(_float_to_str(stock.get_total_dividends())))
+    stock_list.append('{}'.format(_float_to_str(stock.realized_gain)))
+    stock_list.append('=G{0}+H{0}'.format(row))
+    stock_list.append('=IF(I{0}=0;0;IF(E{0}=0;1,0;I{0}/E{0}))'.format(row))
+
+    return stock_list
+
+
 class GoogleSheet:
 
     def __init__(self, sheet_id):
@@ -114,12 +153,12 @@ class GoogleSheet:
     def write_transactions(self, sheet_name, transactions):
         start_row = 2
         start_col = 'A'
-        range_name = '%s!%s%s' % (sheet_name, start_col, start_row)
+        range_name = '{}!{}{}'.format(sheet_name, start_col, start_row)
         values = []
         row = start_row
         for transaction in reversed(transactions):
             if sheet_name == "Utdelningar":
-                values.append(self.db_dividend_to_sheet(transaction, row))
+                values.append(db_dividend_to_sheet(transaction, row))
             elif sheet_name == "Transaktioner":
                 values.append(self.db_transaction_to_sheet(transaction, row))
             elif sheet_name == "Ränta":
@@ -141,7 +180,7 @@ class GoogleSheet:
     def write_stock_summary(self, sheet_name, stocks, start_date=None, end_date=None):
         start_row = 2
         start_col = 'A'
-        range_name = '%s!%s%s' % (sheet_name, start_col, start_row)
+        range_name = '{}!{}{}'.format(sheet_name, start_col, start_row)
 
         values = []
 
@@ -172,7 +211,7 @@ class GoogleSheet:
     def write_stock_history(self, sheet_name, stocks, start_date=None, end_date=None):
         start_row = 2
         start_col = 'A'
-        range_name = '%s!%s%s' % (sheet_name, start_col, start_row)
+        range_name = '{}!{}{}'.format(sheet_name, start_col, start_row)
 
         values = []
 
@@ -183,7 +222,7 @@ class GoogleSheet:
         summary_row_index = 1 + number_of_stocks + 2 + 1
 
         for stock in stocks:
-            row = self.stock_to_history_row(stock, row_id, summary_row_index, start_date, end_date)
+            row = stock_to_history_row(stock, row_id, summary_row_index, start_date, end_date)
             if not row:
                 continue
             values.append(row)
@@ -199,31 +238,6 @@ class GoogleSheet:
                             range=range_name,
                             valueInputOption=self.value_input_option,
                             body=body).execute()
-
-    def stock_to_history_row(self, stock, row, summary_row, start_date=None, end_date=None):
-        stock_list = ['=HYPERLINK("{}"; "{}")'.format(stock.avanza_url, stock.name),
-                      '={}*F{}'.format(stock.avanza_price, row),
-                      '=IF({}=0;0;{}/{})'.format(_float_to_str(stock.sold_units),
-                                                 _float_to_str(stock.sold_sum),
-                                                 _float_to_str(stock.sold_units)),
-                      '=IF({}=0;0;{}/{})'.format(_float_to_str(stock.sum_of_units),
-                                                 _float_to_str(stock.purchasing_sum),
-                                                 _float_to_str(stock.sum_of_units)),
-                      '{}'.format(_float_to_str(stock.purchasing_sum))]
-        #        stock_list.append('=%s*J%s' % (self._float_to_str(stock.get_price(start_date,
-        #        end_date)), row)) ## E
-        # J = Currency
-        if stock.currency == "SEK":
-            stock_list.append(1)
-        else:
-            stock_list.append('=GoogleFinance("CURRENCY:%sSEK")' % str(stock.currency))
-
-        stock_list.append('{}'.format(_float_to_str(stock.get_total_dividends())))
-        stock_list.append('{}'.format(_float_to_str(stock.realized_gain)))
-        stock_list.append('=G{0}+H{0}'.format(row))
-        stock_list.append('=IF(I{0}=0;0;IF(E{0}=0;1,0;I{0}/E{0}))'.format(row))
-
-        return stock_list
 
     def stock_to_row(self, stock, row, summary_row, start_date=None, end_date=None):
         stock_list = ['=HYPERLINK("{}"; "{}")'.format(stock.avanza_url, stock.name),
@@ -241,15 +255,16 @@ class GoogleSheet:
         if stock.currency == "SEK":
             stock_list.append(1)
         else:
-            stock_list.append('=GoogleFinance("CURRENCY:%sSEK")' % str(stock.currency))
+            stock_list.append('=GoogleFinance("CURRENCY:{}SEK")'.format(str(stock.currency)))
         # K = Utdelning/Aktie
-        stock_list.append('=J%s*%s*T%s' % (row, _float_to_str(stock.get_dividend_forecast()), row))
+        stock_list.append(
+            '=J{row}*{}*T{row}'.format(_float_to_str(stock.get_dividend_forecast()), row=row))
         # L = Arets utdelning
         if start_date and end_date:
             stock_list.append(
-                '=%s' % (_float_to_str(stock.get_total_dividends(start_date, end_date))))
+                '={}'.format(_float_to_str(stock.get_total_dividends(start_date, end_date))))
         else:
-            stock_list.append('=%s' % (_float_to_str(
+            stock_list.append('={}'.format(_float_to_str(
                 stock.get_total_dividends(datetime(datetime.today().year, 1, 1).date(),
                                           datetime(datetime.today().year, 12, 31).date()))))
 
@@ -264,15 +279,6 @@ class GoogleSheet:
         stock_list.append('{}'.format(_float_to_str(stock.dividend_per_year)))
 
         return stock_list
-
-    def db_dividend_to_sheet(self, transaction, row):
-        dividend_list = [str(transaction.date), str(type(transaction).__name__),
-                         str(transaction.stock),
-                         _float_to_str(transaction.units), _float_to_str(transaction.price),
-                         "=D%s*E%s" % (row, row), "=YEAR(A%s)" % row, "=MONTH(A%s)" % row,
-                         '=text(N(H%s)&"-1";"MMMM")' % row]
-
-        return dividend_list
 
     def db_transaction_to_sheet(self, transaction, row):
         transaction_list = [str(transaction.date), str(type(transaction).__name__),
@@ -294,7 +300,7 @@ class GoogleSheet:
             print('Name, Major:')
             for row in values:
                 # Print columns A and E, which correspond to indices 0 and 4.
-                print('%s, %s' % (row[0], row[4]))
+                print('{}, {}'.format(row[0], row[4]))
 
         values = [
             [
