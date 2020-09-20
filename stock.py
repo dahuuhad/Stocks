@@ -68,7 +68,6 @@ class Stock:
     def add_price(self, date, price):
         self.prices[date] = price
 
-
     def has_description(self, description):
         return description in self.descriptions or self.key == description
 
@@ -138,4 +137,3 @@ class Stock:
         if False and self.currency == "SEK":
             return transaction.units * transaction.price + transaction.fee
         return transaction.amount
-
