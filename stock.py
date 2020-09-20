@@ -5,7 +5,6 @@ import logging
 import requests
 from bs4 import BeautifulSoup
 
-from data.FinanceService import FinanceService
 from Transaction import Buy, Dividend, Sell, Split
 
 
@@ -28,7 +27,6 @@ class Stock:
         self.key = key
         self.name = name
         self.currency = currency
-        self.finance_service = FinanceService()
         self.bloomberg_finance = bloomberg_quote
         self.transactions = []
         self.kind = kind
