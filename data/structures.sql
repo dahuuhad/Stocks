@@ -2,7 +2,6 @@ DROP TABLE IF EXISTS stocks;
 CREATE TABLE IF NOT EXISTS stocks (
     signature VARCHAR(8) PRIMARY KEY NOT NULL,
     name VARCHAR(30) NOT NULL,
-    exchange VARCHAR(12),
     currency CHAR(3) NOT NULL DEFAULT 'SEK',
     dividend_per_year INT NOT NULL DEFAULT 1,
     dividend_forecast FLOAT NOT NULL DEFAULT 0.0);
