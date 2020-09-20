@@ -76,16 +76,6 @@ class Database:
             descriptions.append(row[0])
         return descriptions
 
-    def get_prices(self, stock):
-        sql = "SELECT price_date, price from prices WHERE stock = '%s'" % stock
-        cur = self.con.cursor()
-        cur.execute(sql)
-        rows = cur.fetchall()
-        prices = []
-        for row in rows:
-            prices.append((row[0], row[1]))
-        return prices
-
     def dividends_this_year(self, stock):
         logging.debug("Dividends received during they year")
         today = date(datetime.today().year, 1, 1).strftime("%Y-%m-%d")
@@ -137,18 +127,11 @@ class Database:
             transactions = self.get_transactions(signature, start_date=None, end_date=None)
             for trans in transactions:
                 stock.add_transaction(trans)
-            prices = self.get_stock_prices(signature, start_date, end_date)
-            for price in prices:
-                stock.add_price(date=price[0], price=price[1])
             if in_portfolio and stock.total_units > 0:
                 stocks.append(stock)
             elif not in_portfolio:
                 stocks.append(stock)
         return stocks
-
-    @staticmethod
-    def get_stock_prices(signature, start_date, end_date):
-        return []
 
     def save_price(self, stock, date, price):
         logging.debug("Saving historical price for %s" % stock)

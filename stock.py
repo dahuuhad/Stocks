@@ -58,15 +58,11 @@ class Stock:
         self.sum_of_units = 0
         self.sold_units = 0
         self.sold_sum = 0
-        self.prices = dict()
 
     def get_total_price(self):
         if self.total_units == 0:
             return 0
         return self.total_amount // self.total_units
-
-    def add_price(self, date, price):
-        self.prices[date] = price
 
     def has_description(self, description):
         return description in self.descriptions or self.key == description
