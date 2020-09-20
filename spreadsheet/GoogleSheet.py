@@ -201,15 +201,15 @@ class GoogleSheet:
                             body=body).execute()
 
     def stock_to_history_row(self, stock, row, summary_row, start_date=None, end_date=None):
-        stock_list = ['=HYPERLINK("%s"; "%s")' % (stock.avanza_url, stock.name),
-                      '=%s*F%s' % (stock.avanza_price, row),
-                      '=IF(%s=0;0;%s/%s)' % (
-                          _float_to_str(stock.sold_units), _float_to_str(stock.sold_sum),
-                          _float_to_str(stock.sold_units)),
-                      '=IF(%s=0;0;%s/%s)' % (
-                          _float_to_str(stock.sum_of_units), _float_to_str(stock.purchasing_sum),
-                          _float_to_str(stock.sum_of_units)),
-                      '%s' % _float_to_str(stock.purchasing_sum)]
+        stock_list = ['=HYPERLINK("{}"; "{}")'.format(stock.avanza_url, stock.name),
+                      '={}*F{}'.format(stock.avanza_price, row),
+                      '=IF({}=0;0;{}/{})'.format(_float_to_str(stock.sold_units),
+                                                 _float_to_str(stock.sold_sum),
+                                                 _float_to_str(stock.sold_units)),
+                      '=IF({}=0;0;{}/{})'.format(_float_to_str(stock.sum_of_units),
+                                                 _float_to_str(stock.purchasing_sum),
+                                                 _float_to_str(stock.sum_of_units)),
+                      '{}'.format(_float_to_str(stock.purchasing_sum))]
         #        stock_list.append('=%s*J%s' % (self._float_to_str(stock.get_price(start_date,
         #        end_date)), row)) ## E
         # J = Currency
