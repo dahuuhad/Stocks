@@ -131,7 +131,8 @@ insert OR REPLACE INTO stock_bloomberg (stock, bloomberg_signature) VALUES
 ('AVZ-GLO', 'avanza-global'),
 ('AVZ-ZRO', 'avanza-zero-den-avgiftsfria-fonden');
 
-insert OR REPLACE INTO stock_identifier (stock, identifier) VALUES ('XACTHDIV', 'XACT Högutdelande'),
+insert OR REPLACE INTO stock_identifier(stock, identifier)
+VALUES ('XACTHDIV', 'XACT Högutdelande'),
 ('SBB-B', 'Samhällsbyggnadsbo. i Norden B'),
 ('LUND-B', 'Lundbergföretagen B'),
 ('AAPL', 'Apple Inc'),

@@ -118,10 +118,6 @@ class Database:
             logging.debug(row)
             signature = row[0]
             exchange = row[2]
-            google = exchange + ":" + signature
-            yahoo = signature
-            if len(exchange) == 3:
-                yahoo += "." + exchange[:2]
             bloomberg = row[6]
             currency = row[3]
             dividend_per_year = row[4]
@@ -133,7 +129,7 @@ class Database:
             avanza_id = row[7]
             avanza_name = row[8]
             is_stock = row[9]
-            stock = Stock(signature, row[1], google, yahoo, currency, 'Aktie',
+            stock = Stock(signature, row[1], currency, 'Aktie',
                           self.get_descriptions(signature),
                           dividend_per_year, dividend_forecast, bloomberg,
                           avanza_id, avanza_name, is_stock)

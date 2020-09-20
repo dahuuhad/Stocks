@@ -19,21 +19,16 @@ def _get_fund_price(name):
 
 
 class Stock:
-    def __init__(self, key, name, google_quote, yahoo_quote,
-                 currency, kind="Aktie", descriptions=None,
-                 dividend_per_year=1, dividend_forecast=0.0,
+    def __init__(self, key, name, currency, kind="Aktie",
+                 descriptions=None, dividend_per_year=1, dividend_forecast=0.0,
                  bloomberg_quote=None, avanza_id=None,
                  avanza_name=None, is_stock=1):
         if descriptions is None:
             descriptions = []
         self.key = key
         self.name = name
-        self.google_quote = str(google_quote)
-        self.yahoo_quote = str(yahoo_quote)
         self.currency = currency
         self.finance_service = FinanceService()
-        # self.google_finance = GoogleFinance()
-        # self.yahoo_finance = YahooFinance()
         self.bloomberg_finance = bloomberg_quote
         self.transactions = []
         self.kind = kind
@@ -75,9 +70,6 @@ class Stock:
     def add_price(self, date, price):
         self.prices[date] = price
 
-    def get_price(self, start_date=None, end_date=None):
-        return self.finance_service.get_stock_price(self.google_quote,
-                                                    self.yahoo_quote, self.bloomberg_finance)
 
     def has_description(self, description):
         return description in self.descriptions or self.key == description
@@ -149,16 +141,3 @@ class Stock:
             return transaction.units * transaction.price + transaction.fee
         return transaction.amount
 
-    @staticmethod
-    def to_table_header():
-        return ["Name", "Price", "Currency", "Currency price"]
-
-    def to_table(self):
-        stock_price = self.finance_service.get_stock_price(self.google_quote,
-                                                           self.yahoo_quote, self.bloomberg_finance)
-        currency_price = self.finance_service.get_currency_price(self.currency)
-
-        # google_price =  self.google_finance.get_stock_price(self.google_quote)
-        # google_currency = "--" #self.google_finance.get_currency_price(self.currency)
-        # yahoo_price = self.yahoo_finance.get_stock_price(self.yahoo_quote)
-        return [self.name, stock_price, self.currency, currency_price]
