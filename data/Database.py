@@ -51,7 +51,7 @@ class Database:
         self.con.commit()
 
     def _read_and_execute_sql_from_file(self, sql_file_path):
-        logging.debug("Reading sql commands from %s" % sql_file_path)
+        logging.debug("Reading sql commands from %s", sql_file_path)
         sql_file = open(sql_file_path, 'r')
         sql = sql_file.read()
         sql_file.close()
@@ -60,7 +60,7 @@ class Database:
         for sql_command in sql_commands:
             if not sql_command:
                 continue
-            logging.debug("Executing: %s" % sql_command)
+            logging.debug("Executing: %s", sql_command)
             cur = self.con.cursor()
             cur.execute(sql_command)
             cur.close()
@@ -79,7 +79,7 @@ class Database:
     def dividends_this_year(self, stock):
         logging.debug("Dividends received during they year")
         today = date(datetime.today().year, 1, 1).strftime("%Y-%m-%d")
-        logging.debug("Today: %s" % today)
+        logging.debug("Today: %s", today)
         sql = "SELECT COUNT(DISTINCT trans_date) FROM transactions " \
               "WHERE trans_type = 'Dividend' AND"
         sql += " stock = '%s' AND trans_date > '%s'" % (stock, today)
@@ -93,7 +93,7 @@ class Database:
 
     def get_all_stocks(self, start_date=None, end_date=None, in_portfolio=True):
         logging.debug("Get stock information from database")
-        sql = "SELECT signature, name, exchange, currency, dividend_per_year, " \
+        sql = "SELECT signature, name, currency, dividend_per_year, " \
               "dividend_forecast, bloomberg_signature"
         sql += " ,stock_id, stock_name, IFNULL(is_stock, 1) is_stock FROM stocks"
         sql += " LEFT OUTER JOIN stock_bloomberg ON signature=stock_bloomberg.stock"
@@ -107,18 +107,17 @@ class Database:
         for row in rows:
             logging.debug(row)
             signature = row[0]
-            exchange = row[2]
-            bloomberg = row[6]
-            currency = row[3]
-            dividend_per_year = row[4]
-            dividend_forecast = row[5]
+            bloomberg = row[5]
+            currency = row[2]
+            dividend_per_year = row[3]
+            dividend_forecast = row[4]
 
             if dividend_per_year == 0:
-                dividend_per_year = row[4]
+                dividend_per_year = row[3]
 
-            avanza_id = row[7]
-            avanza_name = row[8]
-            is_stock = row[9]
+            avanza_id = row[6]
+            avanza_name = row[7]
+            is_stock = row[8]
             stock = Stock(signature, row[1], currency, 'Aktie',
                           self.get_descriptions(signature),
                           dividend_per_year, dividend_forecast, bloomberg,
@@ -133,16 +132,16 @@ class Database:
                 stocks.append(stock)
         return stocks
 
-    def save_price(self, stock, date, price):
-        logging.debug("Saving historical price for %s" % stock)
+    def save_price(self, stock, transaction_date, price):
+        logging.debug("Saving historical price for %s", stock)
         sql = "INSERT OR REPLACE INTO prices (stock, price_date, price) " \
-              "VALUES (%s, %s, %s)" % (stock, date, price)
+              "VALUES (%s, %s, %s)" % (stock, transaction_date, price)
         cur = self.con.cursor()
         cur.execute(sql)
         self.con.commit()
 
     def save_transactions(self, new_transactions):
-        logging.debug("Saving %s new transactions" % len(new_transactions))
+        logging.debug("Saving %s new transactions", len(new_transactions))
         for transaction in new_transactions:
             try:
                 self.save_transaction(transaction)
@@ -151,7 +150,7 @@ class Database:
         self.con.commit()
 
     def save_transaction(self, transaction):
-        logging.debug("Save transaction (%s)" % transaction)
+        logging.debug("Save transaction (%s)", transaction)
         stock_key = self._get_stock_key_from_description(transaction.stock)
         split_ratio = 1.0
         if transaction.str_type == "Split":
@@ -166,7 +165,7 @@ class Database:
         logging.debug(transactions)
         try:
             cur.executemany(sql, transactions)
-            logging.debug("Transaction %s saved" % transactions)
+            logging.debug("Transaction %s saved", transactions)
         except lite.IntegrityError as e:
             logging.debug(e)
             logging.debug(transactions)
@@ -279,7 +278,7 @@ class Database:
 
     @staticmethod
     def dict_factory(cursor, row):
-        dict = {}
+        my_dict = {}
         for idx, col in enumerate(cursor.description):
-            dict[col[0]] = row[idx]
-        return dict
+            my_dict[col[0]] = row[idx]
+        return my_dict

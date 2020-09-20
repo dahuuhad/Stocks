@@ -11,7 +11,7 @@ def _string_to_date(date_str):
         return datetime.strptime(date_str, '%Y-%m-%d %H:%M:%S').date()
 
 
-class Transaction():
+class Transaction:
     def __init__(self, transaction_type, stock, date):
         self.stock = stock
         self.date = _string_to_date(date)
